@@ -45,8 +45,8 @@ def seed():
     # ── Demo user ──
     user = User(
         email="demo@boxshift.nl",
-        name="Friso Kolkman",
-        github_username="friso-kolkman",
+        name="Jan de Vries",
+        github_username="demo",
         phone="+31 6 12345678",
         vermogen_estimate=500_000,
         broker="degiro",
@@ -64,7 +64,7 @@ def seed():
     # ── BV ──
     bv = BV(
         user_id=user.id,
-        name="Kolkman Beleggingen B.V.",
+        name="De Vries Beleggingen B.V.",
         kvk_number="12345678",
         oprichtingsdatum=date(2025, 6, 1),
         status="active",
@@ -260,7 +260,7 @@ def seed():
     print(f"\nDemo data seeded successfully!")
     print(f"  - {len(lead_emails) + 1} leads")
     print(f"  - 1 user (demo@boxshift.nl)")
-    print(f"  - 1 BV (Kolkman Beleggingen B.V.)")
+    print(f"  - 1 BV (De Vries Beleggingen B.V.)")
     print(f"  - {len(transactions)} transactions")
     print(f"\nStart the app with: python app.py")
     print(f"Dashboard: http://localhost:8080/dashboard/1")
