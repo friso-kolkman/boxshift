@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Transacties — BoxShift{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+    <div>
+        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Transacties</h1>
+        <p style="color: var(--text-muted);">{{ bv.name if bv else '' }}</p>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="/transactions/{{ user.id }}" class="btn btn-secondary {{ 'active' if not filter_type and not filter_year else '' }}" style="padding: 8px 16px; font-size: 0.85rem;">Alles</a>
+        <a href="/transactions/{{ user.id }}?type=buy" class="btn btn-secondary {{ 'active' if filter_type == 'buy' else '' }}" style="padding: 8px 16px; font-size: 0.85rem;">Koop</a>
+        <a href="/transactions/{{ user.id }}?type=sell" class="btn btn-secondary {{ 'active' if filter_type == 'sell' else '' }}" style="padding: 8px 16px; font-size: 0.85rem;">Verkoop</a>
+        <a href="/transactions/{{ user.id }}?type=dividend" class="btn btn-secondary {{ 'active' if filter_type == 'dividend' else '' }}" style="padding: 8px 16px; font-size: 0.85rem;">Dividend</a>
+        {% if years %}
+        <select onchange="window.location='/transactions/{{ user.id }}?year='+this.value" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 0.85rem;">
+            <option value="">Alle jaren</option>
+            {% for y in years %}
+            <option value="{{ y }}" {{ 'selected' if filter_year|string == y|string }}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+    </div>
+</div>
+
+{% if transactions %}
+<div class="report-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Type</th>
+                <th>Ticker</th>
+                <th>Omschrijving</th>
+                <th style="text-align:right">Aantal</th>
+                <th style="text-align:right">Prijs</th>
+                <th style="text-align:right">Bedrag</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+            <tr>
+                <td>{{ tx.date.strftime('%d-%m-%Y') }}</td>
+                <td>
+                    {% if tx.type == 'buy' %}<span class="badge badge-blue">Koop</span>
+                    {% elif tx.type == 'sell' %}<span class="badge badge-green">Verkoop</span>
+                    {% elif tx.type == 'dividend' %}<span class="badge badge-purple">Dividend</span>
+                    {% elif tx.type == 'interest' %}<span class="badge badge-green">Rente</span>
+                    {% elif tx.type == 'cost' %}<span class="badge badge-red">Kosten</span>
+                    {% elif tx.type == 'deposit' %}<span class="badge badge-orange">Storting</span>
+                    {% elif tx.type == 'withdrawal' %}<span class="badge badge-red">Opname</span>
+                    {% else %}<span class="badge">{{ tx.type }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ tx.ticker or '—' }}</td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ tx.description }}</td>
+                <td style="text-align:right">{{ "%.2f"|format(tx.quantity) if tx.quantity else '—' }}</td>
+                <td style="text-align:right">{{ "&euro;%.2f"|format(tx.price)|safe if tx.price else '—' }}</td>
+                <td style="text-align:right; {{ 'color: var(--green)' if tx.amount >= 0 else 'color: var(--red)' }}">&euro;{{ "{:,.2f}".format(tx.amount).replace(",", ".") }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p style="margin-top: 12px; color: var(--text-muted); font-size: 0.85rem;">{{ transactions|length }} transactie(s)</p>
+{% else %}
+<div class="empty-state">
+    <h3>Geen transacties</h3>
+    <p>Upload je broker CSV via het <a href="/dashboard/{{ user.id }}" style="color: var(--accent);">dashboard</a> om te beginnen</p>
+</div>
+{% endif %}
+{% endblock %}

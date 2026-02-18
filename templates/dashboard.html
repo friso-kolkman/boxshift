@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — BoxShift{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 32px;">
+    <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">{{ bv.name if bv else 'Dashboard' }}</h1>
+    <p style="color: var(--text-muted);">Welkom terug, {{ user.name.split()[0] }}</p>
+</div>
+
+<!-- Metrics -->
+<div class="grid-3" style="margin-bottom: 32px;">
+    <div class="metric-card">
+        <div class="label">Portefeuille (kostprijs)</div>
+        <div class="value blue">&euro;{{ "{:,.2f}".format(total_cost).replace(",", ".") }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="label">Transacties</div>
+        <div class="value">{{ tx_count }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="label">YTD Resultaat</div>
+        <div class="value {{ 'green' if ytd_pl >= 0 else 'red' }}">&euro;{{ "{:,.2f}".format(ytd_pl).replace(",", ".") }}</div>
+    </div>
+</div>
+
+<!-- Holdings -->
+<div style="margin-bottom: 32px;">
+    <div class="section-title">Huidige posities</div>
+    {% if holdings %}
+    <div class="report-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticker</th>
+                    <th>Naam</th>
+                    <th style="text-align:right">Aantal</th>
+                    <th style="text-align:right">Gem. kostprijs</th>
+                    <th style="text-align:right">Totale waarde</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in holdings %}
+                <tr>
+                    <td><span class="badge badge-blue">{{ h.ticker }}</span></td>
+                    <td>{{ h.name }}</td>
+                    <td style="text-align:right">{{ "%.2f"|format(h.quantity) }}</td>
+                    <td style="text-align:right">&euro;{{ "%.2f"|format(h.avg_cost_price) }}</td>
+                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(h.total_cost).replace(",", ".") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>Nog geen posities</h3>
+        <p>Upload je broker CSV om te beginnen</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- CSV Upload -->
+<div style="margin-bottom: 32px;">
+    <div class="section-title">Transacties importeren</div>
+    <form action="/api/import" method="POST" enctype="multipart/form-data" id="uploadForm">
+        <input type="hidden" name="user_id" value="{{ user.id }}">
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Broker</label>
+                <select name="broker">
+                    <option value="degiro" {{ 'selected' if user.broker == 'degiro' }}>DEGIRO</option>
+                    <option value="ib" {{ 'selected' if user.broker == 'ib' }}>Interactive Brokers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>CSV bestand</label>
+                <div class="upload-zone" onclick="this.querySelector('input').click()">
+                    <input type="file" name="csv_file" accept=".csv" required onchange="document.getElementById('fileName').textContent = this.files[0]?.name || 'Kies bestand...'">
+                    <p id="fileName" style="color: var(--text-muted);">Klik of sleep je CSV hier</p>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Importeren</button>
+    </form>
+</div>
+
+<!-- Quick actions -->
+<div class="grid-2">
+    <a href="/annual-report/{{ user.id }}" class="metric-card" style="text-decoration: none; display: block;">
+        <div class="label">Jaarrekening</div>
+        <div style="color: var(--text); font-weight: 600;">Genereer jaarrekening &rarr;</div>
+    </a>
+    <a href="/vpb/{{ user.id }}" class="metric-card" style="text-decoration: none; display: block;">
+        <div class="label">Belasting</div>
+        <div style="color: var(--text); font-weight: 600;">Bereken VPB &rarr;</div>
+    </a>
+</div>
+{% endblock %}

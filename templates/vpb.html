@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}VPB {{ year }} — BoxShift{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+    <div>
+        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">VPB-aangifte {{ year }}</h1>
+        <p style="color: var(--text-muted);">{{ bv.name if bv else '' }}</p>
+    </div>
+    <form action="/api/calculate-vpb" method="POST" style="display: flex; gap: 8px; align-items: center;">
+        <input type="hidden" name="user_id" value="{{ user.id }}">
+        <select name="year" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+            {% for y in range(2028, 2023, -1) %}
+            <option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Bereken VPB</button>
+    </form>
+</div>
+
+{% if filing and breakdown %}
+<div class="grid-3" style="margin-bottom: 32px;">
+    <div class="metric-card">
+        <div class="label">Belastbare winst</div>
+        <div class="value">&euro;{{ "{:,.2f}".format(breakdown.taxable_profit).replace(",", ".") }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="label">Te betalen VPB</div>
+        <div class="value red">&euro;{{ "{:,.2f}".format(breakdown.total_vpb).replace(",", ".") }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="label">Effectief tarief</div>
+        <div class="value blue">{{ breakdown.effective_rate }}%</div>
+    </div>
+</div>
+
+<div style="margin-bottom: 32px;">
+    <h2 class="section-title">Berekening</h2>
+    <div class="report-table" style="max-width: 600px;">
+        <table>
+            <thead>
+                <tr><th>Schijf</th><th style="text-align:right">Bedrag</th><th style="text-align:right">Tarief</th><th style="text-align:right">Belasting</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Eerste &euro;200.000</td>
+                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.low_bracket).replace(",", ".") }}</td>
+                    <td style="text-align:right">19%</td>
+                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.low_bracket_tax).replace(",", ".") }}</td>
+                </tr>
+                {% if breakdown.high_bracket > 0 %}
+                <tr>
+                    <td>Boven &euro;200.000</td>
+                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.high_bracket).replace(",", ".") }}</td>
+                    <td style="text-align:right">25,8%</td>
+                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.high_bracket_tax).replace(",", ".") }}</td>
+                </tr>
+                {% endif %}
+                <tr class="report-row-total">
+                    <td>Totaal</td>
+                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.taxable_profit).replace(",", ".") }}</td>
+                    <td style="text-align:right">{{ breakdown.effective_rate }}%</td>
+                    <td style="text-align:right; font-weight: 700; color: var(--red);">&euro;{{ "{:,.2f}".format(breakdown.total_vpb).replace(",", ".") }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="display: flex; gap: 12px; align-items: center;">
+    <span>Status: <span class="badge badge-orange">{{ filing.status }}</span></span>
+    <a href="/annual-report/{{ user.id }}?year={{ year }}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Bekijk jaarrekening &rarr;</a>
+</div>
+
+{% else %}
+<div class="empty-state">
+    <h3>Nog geen VPB-berekening voor {{ year }}</h3>
+    <p>Klik op "Bereken VPB" om de vennootschapsbelasting te berekenen op basis van je transacties</p>
+</div>
+{% endif %}
+{% endblock %}

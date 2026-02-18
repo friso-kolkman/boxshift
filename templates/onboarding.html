@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Onboarding — BoxShift{% endblock %}
+
+{% block content %}
+<div style="max-width: 560px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">Start met BoxShift</h1>
+        <p style="color: var(--text-muted);">Vul je gegevens in en we zetten je beleggings-BV klaar</p>
+    </div>
+
+    {% if error %}
+    <div style="background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); padding: 12px 20px; border-radius: 8px; color: var(--red); margin-bottom: 24px; font-size: 0.9rem;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="/api/onboard" method="POST" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px;">
+        <div class="form-group">
+            <label>Volledige naam *</label>
+            <input type="text" name="name" placeholder="Jan Jansen" required>
+        </div>
+
+        <div class="form-group">
+            <label>E-mailadres *</label>
+            <input type="email" name="email" placeholder="jan@email.nl" required>
+        </div>
+
+        <div class="form-group">
+            <label>Telefoonnummer</label>
+            <input type="tel" name="phone" placeholder="+31 6 12345678">
+        </div>
+
+        <div class="form-group">
+            <label>Geschat belegd vermogen</label>
+            <select name="vermogen_estimate">
+                <option value="50000">&euro;25.000 – &euro;100.000</option>
+                <option value="250000" selected>&euro;100.000 – &euro;500.000</option>
+                <option value="750000">&euro;500.000 – &euro;1.000.000</option>
+                <option value="2000000">&euro;1.000.000+</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Huidige broker</label>
+            <select name="broker">
+                <option value="degiro">DEGIRO</option>
+                <option value="ib">Interactive Brokers</option>
+                <option value="lynx">Lynx</option>
+                <option value="other">Anders</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Jouw situatie</label>
+            <select name="situation">
+                <option value="particulier">Particuliere belegger</option>
+                <option value="startup_employee">Startup medewerker (opties/aandelen)</option>
+                <option value="dga">DGA met bestaande BV</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-large" style="width: 100%; justify-content: center; margin-top: 8px;">
+            Account aanmaken
+        </button>
+    </form>
+
+    <p style="text-align: center; margin-top: 16px; font-size: 0.8rem; color: var(--text-muted);">
+        Door je aan te melden ga je akkoord met onze voorwaarden. BoxShift verstrekt geen fiscaal advies.
+    </p>
+</div>
+{% endblock %}

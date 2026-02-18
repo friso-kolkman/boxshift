@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Jaarrekening {{ year }} — BoxShift{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+    <div>
+        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Jaarrekening {{ year }}</h1>
+        <p style="color: var(--text-muted);">{{ bv.name if bv else '' }}</p>
+    </div>
+    <form action="/api/generate-report" method="POST" style="display: flex; gap: 8px; align-items: center;">
+        <input type="hidden" name="user_id" value="{{ user.id }}">
+        <select name="year" style="padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+            {% for y in range(2028, 2023, -1) %}
+            <option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Genereer jaarrekening</button>
+    </form>
+</div>
+
+{% if report %}
+<!-- BALANS -->
+<div style="margin-bottom: 40px;">
+    <h2 class="section-title">Balans per 31 december {{ year }}</h2>
+    <div class="grid-2">
+        <!-- Activa -->
+        <div class="report-table">
+            <table>
+                <thead>
+                    <tr><th colspan="2">Activa</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Effectenportefeuille (kostprijs)</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(report.balans.activa.effectenportefeuille).replace(",", ".") }}</td>
+                    </tr>
+                    <tr>
+                        <td>Liquide middelen</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(report.balans.activa.liquide_middelen).replace(",", ".") }}</td>
+                    </tr>
+                    <tr class="report-row-total">
+                        <td>Totaal activa</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(report.balans.activa.totaal).replace(",", ".") }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Passiva -->
+        <div class="report-table">
+            <table>
+                <thead>
+                    <tr><th colspan="2">Passiva</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Gestort kapitaal</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(report.balans.passiva.gestort_kapitaal).replace(",", ".") }}</td>
+                    </tr>
+                    <tr>
+                        <td>Winstreserve voorgaande jaren</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(report.balans.passiva.winstreserve_voorgaande_jaren).replace(",", ".") }}</td>
+                    </tr>
+                    <tr>
+                        <td>Resultaat boekjaar</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(report.balans.passiva.resultaat_boekjaar).replace(",", ".") }}</td>
+                    </tr>
+                    <tr>
+                        <td>Vennootschapsbelasting</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(report.balans.passiva.vpb_schuld).replace(",", ".") }}</td>
+                    </tr>
+                    <tr class="report-row-total">
+                        <td>Totaal passiva</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(report.balans.passiva.totaal).replace(",", ".") }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- WINST & VERLIES -->
+<div style="margin-bottom: 40px;">
+    <h2 class="section-title">Winst- en verliesrekening {{ year }}</h2>
+    <div class="report-table" style="max-width: 600px;">
+        <table>
+            <thead>
+                <tr><th>Post</th><th style="text-align:right">Bedrag</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Gerealiseerde koersresultaten</td>
+                    <td style="text-align:right; {{ 'color:var(--green)' if report.winst_verlies.gerealiseerde_koersresultaten >= 0 else 'color:var(--red)' }}">&euro;{{ "{:,.2f}".format(report.winst_verlies.gerealiseerde_koersresultaten).replace(",", ".") }}</td>
+                </tr>
+                <tr>
+                    <td>Dividendinkomsten</td>
+                    <td style="text-align:right; color:var(--green)">&euro;{{ "{:,.2f}".format(report.winst_verlies.dividendinkomsten).replace(",", ".") }}</td>
+                </tr>
+                <tr>
+                    <td>Rente-inkomsten</td>
+                    <td style="text-align:right; color:var(--green)">&euro;{{ "{:,.2f}".format(report.winst_verlies.rente_inkomsten).replace(",", ".") }}</td>
+                </tr>
+                <tr>
+                    <td>Transactiekosten</td>
+                    <td style="text-align:right; color:var(--red)">-&euro;{{ "{:,.2f}".format(report.winst_verlies.transactiekosten).replace(",", ".") }}</td>
+                </tr>
+                <tr>
+                    <td>Overige kosten</td>
+                    <td style="text-align:right; color:var(--red)">-&euro;{{ "{:,.2f}".format(report.winst_verlies.overige_kosten).replace(",", ".") }}</td>
+                </tr>
+                <tr class="report-row-total">
+                    <td>Resultaat voor belasting</td>
+                    <td style="text-align:right; font-weight: 700;">&euro;{{ "{:,.2f}".format(report.winst_verlies.resultaat_voor_belasting).replace(",", ".") }}</td>
+                </tr>
+                <tr>
+                    <td>Vennootschapsbelasting</td>
+                    <td style="text-align:right; color:var(--red)">-&euro;{{ "{:,.2f}".format(report.winst_verlies.vpb).replace(",", ".") }}</td>
+                </tr>
+                <tr class="report-row-total">
+                    <td>Resultaat na belasting</td>
+                    <td style="text-align:right; font-weight: 700; {{ 'color:var(--green)' if report.winst_verlies.resultaat_na_belasting >= 0 else 'color:var(--red)' }}">&euro;{{ "{:,.2f}".format(report.winst_verlies.resultaat_na_belasting).replace(",", ".") }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p style="color: var(--text-muted); font-size: 0.8rem;">
+    Status: <span class="badge badge-orange">{{ report.status }}</span> &mdash;
+    Gegenereerd: {{ report.generated_at.strftime('%d-%m-%Y %H:%M') }}
+</p>
+
+{% else %}
+<div class="empty-state">
+    <h3>Nog geen jaarrekening voor {{ year }}</h3>
+    <p>Klik op "Genereer jaarrekening" om de balans en winst &amp; verliesrekening te berekenen</p>
+</div>
+{% endif %}
+{% endblock %}

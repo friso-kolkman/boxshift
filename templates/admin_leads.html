@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Leads — BoxShift Admin{% endblock %}
+
+{% block content %}
+<h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Waitlist leads</h1>
+<p style="color: var(--text-muted); margin-bottom: 32px;">{{ leads|length }} aanmeldingen</p>
+
+{% if leads %}
+<div class="report-table">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>E-mail</th>
+                <th>Datum</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in leads %}
+            <tr>
+                <td>{{ lead.id }}</td>
+                <td>{{ lead.email }}</td>
+                <td>{{ lead.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                <td>
+                    {% if lead.status == 'new' %}<span class="badge badge-blue">Nieuw</span>
+                    {% elif lead.status == 'contacted' %}<span class="badge badge-orange">Gecontacteerd</span>
+                    {% elif lead.status == 'converted' %}<span class="badge badge-green">Geconverteerd</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <h3>Nog geen leads</h3>
+    <p>Leads verschijnen hier zodra mensen zich via de landing page aanmelden</p>
+</div>
+{% endif %}
+{% endblock %}

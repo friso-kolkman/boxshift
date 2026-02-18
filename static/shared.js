@@ -29,13 +29,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Waitlist form
     const form = document.getElementById('waitlistForm');
     if (form) {
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('emailInput').value;
-            // TODO: send to backend API
-            console.log('Waitlist signup:', email);
-            form.style.display = 'none';
-            document.getElementById('successMsg').style.display = 'block';
+            const successMsg = document.getElementById('successMsg');
+            try {
+                const res = await fetch('/api/waitlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                });
+                const data = await res.json();
+                form.style.display = 'none';
+                successMsg.textContent = data.message || 'Je staat op de lijst!';
+                successMsg.style.display = 'block';
+            } catch (err) {
+                form.style.display = 'none';
+                successMsg.textContent = 'Bedankt voor je aanmelding!';
+                successMsg.style.display = 'block';
+            }
         });
     }
 
