@@ -45,7 +45,7 @@ def get_current_user(db):
     user_id = session.get("user_id")
     if not user_id:
         return None
-    return db.query(User).get(user_id)
+    return db.get(User, user_id)
 
 
 # ─── GitHub OAuth ─────────────────────────────────────────────────────────
