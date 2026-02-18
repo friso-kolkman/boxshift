@@ -165,8 +165,8 @@ def github_callback():
 
 @app.route("/auth/demo")
 def demo_login():
-    """Quick demo login (dev only)."""
-    if not app.debug:
+    """Quick demo login."""
+    if not app.debug and not config.ALLOW_DEMO_LOGIN:
         return redirect(url_for("login"))
 
     db = get_db()

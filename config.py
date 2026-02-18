@@ -16,3 +16,6 @@ APP_URL = os.getenv("APP_URL", "http://localhost:8080")
 
 # Allowed GitHub usernames (admin access)
 ALLOWED_GITHUB_USERS = os.getenv("ALLOWED_GITHUB_USERS", "friso-kolkman").split(",")
+
+# Allow demo login (set to "true" to enable /auth/demo without debug mode)
+ALLOW_DEMO_LOGIN = os.getenv("ALLOW_DEMO_LOGIN", "false").lower() == "true"
