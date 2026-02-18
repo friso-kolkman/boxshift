@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator — BoxShift</title>
+    <meta name="description" content="Bereken hoeveel je bespaart door te beleggen via een BV (Box 2) in plaats van Box 3.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .calc-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .calc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 36px;
+        }
+        .calc-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin-bottom: 36px;
+        }
+        .calc-field label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .calc-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .calc-field input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+        }
+        .calc-field input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+        .calc-field input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid var(--bg);
+        }
+        .calc-range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .result-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            text-align: center;
+        }
+        .result-box.red { border-color: rgba(248, 81, 73, 0.3); }
+        .result-box.green { border-color: rgba(63, 185, 80, 0.3); }
+        .result-box.blue { border-color: rgba(88, 166, 255, 0.3); background: rgba(88, 166, 255, 0.03); }
+        .result-box .label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 10px;
+        }
+        .result-box .value { font-size: 1.7rem; font-weight: 800; }
+        .result-box.red .value { color: var(--red); }
+        .result-box.green .value { color: var(--green); }
+        .result-box.blue .value { color: var(--accent); }
+
+        /* DETAIL TABLE */
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .detail-table th, .detail-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .detail-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .detail-table .col-red { color: var(--red); }
+        .detail-table .col-green { color: var(--green); }
+        .detail-table tr:last-child td { border: none; font-weight: 600; }
+
+        .calc-note {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            padding: 16px 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        /* 10-YEAR */
+        .projection {
+            margin-top: 32px;
+            padding: 28px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .projection h3 { margin-bottom: 16px; font-size: 1.1rem; }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 200px;
+            padding: 0 4px;
+        }
+        .bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+            justify-content: flex-end;
+        }
+        .bar-pair {
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+            width: 100%;
+            justify-content: center;
+        }
+        .bar {
+            width: 14px;
+            border-radius: 3px 3px 0 0;
+            min-height: 2px;
+            transition: height 0.4s ease;
+        }
+        .bar.box3 { background: var(--red); opacity: 0.7; }
+        .bar.box2 { background: var(--green); opacity: 0.7; }
+        .bar-label { font-size: 0.7rem; color: var(--text-muted); }
+        .bar-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .legend-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 6px;
+        }
+        .legend-dot.red { background: var(--red); opacity: 0.7; }
+        .legend-dot.green { background: var(--green); opacity: 0.7; }
+        .projection-total {
+            text-align: center;
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(88, 166, 255, 0.05);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 8px;
+        }
+        .projection-total .label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+        .projection-total .value { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+
+        @media (max-width: 768px) {
+            .calc-inputs { grid-template-columns: 1fr; }
+            .results-grid { grid-template-columns: 1fr; }
+            .bar { width: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#f85149"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#3fb950"/><path d="M10 6.5h4" stroke="#58a6ff"/><path d="M12 5l2 1.5-2 1.5" stroke="#58a6ff"/></svg>
+                Box<span>Shift</span>
+            </a>
+            <div class="nav-links">
+                <a href="hoe-het-werkt.html">Hoe het werkt</a>
+                <a href="calculator.html" class="active">Calculator</a>
+                <a href="prijzen.html">Prijzen</a>
+                <a href="faq.html">FAQ</a>
+                <a href="index.html#start" class="btn btn-primary">Aanmelden</a>
+            </div>
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="hoe-het-werkt.html">Hoe het werkt</a>
+        <a href="calculator.html">Calculator</a>
+        <a href="prijzen.html">Prijzen</a>
+        <a href="faq.html">FAQ</a>
+        <a href="index.html#start" class="btn btn-primary">Aanmelden</a>
+    </div>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1>Bereken je besparing</h1>
+            <p>Vergelijk Box 3 (nieuw, 2028) met Box 2 (beleggings-BV) en zie hoeveel je kunt besparen.</p>
+        </div>
+    </section>
+
+    <section style="padding-top: 0;">
+        <div class="calc-container">
+            <div class="calc-card reveal">
+                <div class="calc-inputs">
+                    <div class="calc-field">
+                        <label>Belegd vermogen</label>
+                        <div class="calc-value" id="capitalDisplay">&euro;500.000</div>
+                        <input type="range" id="capitalSlider" min="50000" max="2000000" step="10000" value="500000">
+                        <div class="calc-range-labels"><span>&euro;50k</span><span>&euro;2M</span></div>
+                    </div>
+                    <div class="calc-field">
+                        <label>Verwacht jaarlijks rendement</label>
+                        <div class="calc-value" id="returnDisplay">8%</div>
+                        <input type="range" id="returnSlider" min="2" max="20" step="1" value="8">
+                        <div class="calc-range-labels"><span>2%</span><span>20%</span></div>
+                    </div>
+                </div>
+
+                <div class="results-grid">
+                    <div class="result-box red">
+                        <div class="label">Box 3 belasting / jaar</div>
+                        <div class="value" id="box3Tax">&euro;14.400</div>
+                    </div>
+                    <div class="result-box green">
+                        <div class="label">Box 2 belasting / jaar</div>
+                        <div class="value" id="box2Tax">&euro;7.600</div>
+                    </div>
+                    <div class="result-box blue">
+                        <div class="label">Jaarlijkse besparing</div>
+                        <div class="value" id="savings">&euro;6.800</div>
+                    </div>
+                </div>
+
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Box 3 (36%)</th>
+                            <th>Box 2 (BV)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Bruto rendement</td>
+                            <td class="col-red" id="d_profit3">&euro;40.000</td>
+                            <td class="col-green" id="d_profit2">&euro;40.000</td>
+                        </tr>
+                        <tr>
+                            <td>Belasting</td>
+                            <td class="col-red" id="d_tax3">&euro;14.400</td>
+                            <td class="col-green" id="d_tax2">&euro;7.600</td>
+                        </tr>
+                        <tr>
+                            <td>Netto (bij herinvesteren)</td>
+                            <td class="col-red" id="d_net3">&euro;25.600</td>
+                            <td class="col-green" id="d_net2">&euro;32.400</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="projection" id="projectionSection">
+                    <h3>10-jaar projectie: vermogensgroei</h3>
+                    <div class="bar-chart" id="barChart"></div>
+                    <div class="bar-legend">
+                        <span><span class="legend-dot red"></span>Box 3</span>
+                        <span><span class="legend-dot green"></span>Box 2 (BV)</span>
+                    </div>
+                    <div class="projection-total">
+                        <div class="label">Extra vermogen na 10 jaar via BV</div>
+                        <div class="value" id="totalSavings">&euro;68.000</div>
+                    </div>
+                </div>
+
+                <div class="calc-note" style="margin-top: 24px;">
+                    <strong>Disclaimer:</strong> Dit is een vereenvoudigd rekenmodel. Box 2 berekening toont alleen VPB (19% tot &euro;200k, 25,8% daarboven) bij herinvesteren binnen de BV, zonder dividend. Bij dividend uitkeren komt er 24,5-33% AB-heffing bovenop. Het voordeel zit vooral in uitgestelde belastingheffing en compound growth. Raadpleeg altijd een belastingadviseur.
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;" class="reveal">
+                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 1rem;">Overtuigd? Begin vandaag nog.</p>
+                <a href="index.html#start" class="btn btn-primary btn-large">Schrijf je in voor de waitlist</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>BoxShift &mdash; Van Box 3 naar Box 2, zonder gedoe. &nbsp;|&nbsp; <a href="faq.html">FAQ</a> &nbsp;|&nbsp; <a href="#">Privacy</a> &nbsp;|&nbsp; <a href="#">Disclaimer</a></p>
+            <p style="margin-top: 8px; font-size: 0.78rem;">BoxShift verstrekt geen financieel of fiscaal advies. Raadpleeg altijd een belastingadviseur voor je persoonlijke situatie.</p>
+        </div>
+    </footer>
+
+    <script src="shared.js"></script>
+    <script>
+        const capitalSlider = document.getElementById('capitalSlider');
+        const returnSlider = document.getElementById('returnSlider');
+
+        function fmt(n) { return '\u20AC' + Math.round(n).toLocaleString('nl-NL'); }
+
+        function vpb(profit) {
+            if (profit <= 200000) return profit * 0.19;
+            return 200000 * 0.19 + (profit - 200000) * 0.258;
+        }
+
+        function calculate() {
+            const capital = parseInt(capitalSlider.value);
+            const rate = parseInt(returnSlider.value) / 100;
+            const profit = capital * rate;
+
+            const tax3 = profit * 0.36;
+            const tax2 = vpb(profit);
+            const saving = tax3 - tax2;
+            const net3 = profit - tax3;
+            const net2 = profit - tax2;
+
+            document.getElementById('capitalDisplay').textContent = fmt(capital);
+            document.getElementById('returnDisplay').textContent = returnSlider.value + '%';
+            document.getElementById('box3Tax').textContent = fmt(tax3);
+            document.getElementById('box2Tax').textContent = fmt(tax2);
+            document.getElementById('savings').textContent = fmt(saving);
+
+            document.getElementById('d_profit3').textContent = fmt(profit);
+            document.getElementById('d_profit2').textContent = fmt(profit);
+            document.getElementById('d_tax3').textContent = fmt(tax3);
+            document.getElementById('d_tax2').textContent = fmt(tax2);
+            document.getElementById('d_net3').textContent = fmt(net3);
+            document.getElementById('d_net2').textContent = fmt(net2);
+
+            // 10-year projection
+            let val3 = capital, val2 = capital;
+            const years = [];
+            for (let y = 1; y <= 10; y++) {
+                const p3 = val3 * rate;
+                val3 = val3 + p3 - (p3 * 0.36);
+                const p2 = val2 * rate;
+                val2 = val2 + p2 - vpb(p2);
+                years.push({ year: y, box3: val3, box2: val2 });
+            }
+
+            const maxVal = Math.max(years[9].box3, years[9].box2);
+            const chart = document.getElementById('barChart');
+            chart.innerHTML = '';
+            years.forEach(y => {
+                const h3 = Math.max(2, (y.box3 / maxVal) * 180);
+                const h2 = Math.max(2, (y.box2 / maxVal) * 180);
+                chart.innerHTML += `
+                    <div class="bar-group">
+                        <div class="bar-pair">
+                            <div class="bar box3" style="height:${h3}px" title="Box 3: ${fmt(y.box3)}"></div>
+                            <div class="bar box2" style="height:${h2}px" title="Box 2: ${fmt(y.box2)}"></div>
+                        </div>
+                        <div class="bar-label">${y.year}j</div>
+                    </div>`;
+            });
+
+            document.getElementById('totalSavings').textContent = fmt(years[9].box2 - years[9].box3);
+        }
+
+        capitalSlider.addEventListener('input', calculate);
+        returnSlider.addEventListener('input', calculate);
+        calculate();
+    </script>
+</body>
+</html>

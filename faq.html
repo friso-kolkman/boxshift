@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ — BoxShift</title>
+    <meta name="description" content="Veelgestelde vragen over BoxShift, beleggings-BV's, Box 3, Box 2 en de Wet werkelijk rendement.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .faq-list { max-width: 720px; margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid var(--border); }
+        .faq-q {
+            padding: 20px 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            user-select: none;
+        }
+        .faq-q:hover { color: var(--accent); }
+        .faq-toggle {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            transition: transform 0.3s, background 0.2s;
+        }
+        .faq-item.open .faq-toggle {
+            transform: rotate(45deg);
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+        }
+        .faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .faq-item.open .faq-a { max-height: 600px; }
+        .faq-a p {
+            padding-bottom: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .faq-category {
+            margin-bottom: 48px;
+        }
+        .faq-category h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#f85149"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#3fb950"/><path d="M10 6.5h4" stroke="#58a6ff"/><path d="M12 5l2 1.5-2 1.5" stroke="#58a6ff"/></svg>
+                Box<span>Shift</span>
+            </a>
+            <div class="nav-links">
+                <a href="hoe-het-werkt.html">Hoe het werkt</a>
+                <a href="calculator.html">Calculator</a>
+                <a href="prijzen.html">Prijzen</a>
+                <a href="faq.html" class="active">FAQ</a>
+                <a href="index.html#start" class="btn btn-primary">Aanmelden</a>
+            </div>
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="hoe-het-werkt.html">Hoe het werkt</a>
+        <a href="calculator.html">Calculator</a>
+        <a href="prijzen.html">Prijzen</a>
+        <a href="faq.html">FAQ</a>
+        <a href="index.html#start" class="btn btn-primary">Aanmelden</a>
+    </div>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1>Veelgestelde vragen</h1>
+            <p>Alles wat je wilt weten over Box 3, Box 2, de nieuwe wet en BoxShift.</p>
+        </div>
+    </section>
+
+    <section style="padding-top: 0;">
+        <div class="container">
+            <div class="faq-list reveal">
+                <div class="faq-category">
+                    <h3>Over de nieuwe Box 3-wet</h3>
+                    <div class="faq-item">
+                        <div class="faq-q">Wat verandert er precies in Box 3? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>De Tweede Kamer heeft op 12 februari 2026 de Wet werkelijk rendement aangenomen. Vanaf 1 januari 2028 wordt je werkelijke rendement belast tegen 36%, inclusief ongerealiseerde koerswinsten. Als je aandelen in waarde stijgen maar je verkoopt niets, betaal je toch belasting.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Moet de wet nog door de Eerste Kamer? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>Ja, de Eerste Kamer (Senaat) moet nog stemmen. Maar gezien de politieke steun en de ingangsdatum van 1 januari 2028 is het verstandig om nu al voor te bereiden. De oprichting van een BV kost tijd en je wilt klaar zijn voordat de wet ingaat.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Wat is het verschil met de oude Box 3? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>De oude Box 3 werkte met een fictief rendement (forfaitair). De overheid ging ervan uit dat je een bepaald percentage rendement maakte, ongeacht je werkelijke resultaat. Het nieuwe systeem belast je werkelijke rendement, inclusief ongerealiseerde koerswinsten. Spaarders betalen minder, maar beleggers met koerswinst betalen meer.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Wat als mijn beleggingen in waarde dalen? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>In Box 3 (nieuw) betaal je in een verliesjaar geen belasting, maar verliesverrekening is beperkt. In een BV zijn verliezen volledig verrekenbaar met toekomstige winsten. Dat is een groot voordeel in volatiele markten.</p></div>
+                    </div>
+                </div>
+
+                <div class="faq-category">
+                    <h3>Over de beleggings-BV (Box 2)</h3>
+                    <div class="faq-item">
+                        <div class="faq-q">Waarom is een beleggings-BV voordeliger? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>In een BV (Box 2) betaal je vennootschapsbelasting over gerealiseerde winst: 19% tot &euro;200.000, daarboven 25,8%. Je betaalt pas AB-heffing (24,5-33%) als je dividend uitkeert. Zolang je herinvesteert binnen de BV, groeit je vermogen belastingvrij door. Kosten zijn aftrekbaar en verliezen verrekenbaar.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Vanaf welk bedrag loont een BV? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>Als vuistregel: vanaf ca. &euro;100.000 aan belegd vermogen kan een BV-structuur interessant zijn, afhankelijk van je verwachte rendement en uitkeergedrag. Hoe hoger het vermogen en hoe langer je horizon, hoe groter het voordeel door uitgestelde belastingheffing. Gebruik onze <a href="calculator.html" style="color: var(--accent);">calculator</a> om je besparing te berekenen.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Kan ik mijn bestaande aandelen en ETF's inbrengen? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>Ja. Je kunt effecten inbrengen in je BV tegen de huidige marktwaarde. Let op: dit kan als vervreemding gelden in Box 3, dus timing is belangrijk. Wij begeleiden je bij de optimale aanpak en werken samen met fiscaal adviseurs.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Ik heb aandelen van mijn werkgever (startup). Kan dat ook? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>Absoluut. Startup-aandelen of opties kun je onderbrengen in een BV. Zo voorkom je dat toekomstige waardestijging in Box 3 belast wordt tegen 36%. Ideaal voor werknemers van snelgroeiende bedrijven.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Wat als ik geld uit de BV wil halen? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>Als je dividend uitkeert, betaal je AB-heffing (Box 2): 24,5% tot &euro;67.000 per jaar (per partner), daarboven 33%. Het voordeel van de BV zit vooral in het uitstellen van deze heffing. Zolang je herinvesteert, profiteer je van compound growth zonder belastingafdracht.</p></div>
+                    </div>
+                </div>
+
+                <div class="faq-category">
+                    <h3>Over BoxShift</h3>
+                    <div class="faq-item">
+                        <div class="faq-q">Hoe werkt de AI-administratie? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>Je koppelt je zakelijke beleggingsrekening aan BoxShift. Onze AI leest automatisch alle transacties in, categoriseert ze (aankopen, verkopen, dividend, kosten), en verwerkt alles in een jaarrekening. De balans wordt op kostprijs gewaardeerd, de W&V toont gerealiseerd en ongerealiseerd resultaat apart. Op basis hiervan wordt je VPB-aangifte gegenereerd.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Hoe lang duurt het oprichten van een BV? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>Via BoxShift is je BV binnen 5 werkdagen operationeel. We handelen alles digitaal af: statuten bij de notaris, inschrijving bij KvK en Belastingdienst, en begeleiding bij het openen van je zakelijke beleggingsrekening.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Heb ik nog een accountant nodig? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>Voor de standaard administratie van een beleggings-BV niet. BoxShift genereert je volledige jaarrekening en VPB-aangifte. Voor complexere situaties (bijv. combinatie met werkmaatschappij, vastgoed, of fiscaal advies) raden we aan een adviseur te raadplegen.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Bij welke brokers werkt BoxShift? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>We ondersteunen de meest gebruikte zakelijke brokers in Nederland, waaronder DEGIRO (zakelijk), Interactive Brokers, Lynx, en ABN AMRO beleggen. We breiden continu uit. Heb je een specifieke broker? Laat het ons weten.</p></div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Wat kost BoxShift? <span class="faq-toggle">+</span></div>
+                        <div class="faq-a"><p>BV oprichten: &euro;499 eenmalig. Administratie: &euro;49/maand, inclusief jaarrekening en VPB-aangifte. Vergelijk dat met &euro;1.500-3.500/jaar bij een traditionele accountant. Bekijk onze <a href="prijzen.html" style="color: var(--accent);">prijzenpagina</a> voor alle details.</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container reveal">
+            <h2>Nog vragen? Of klaar om te starten?</h2>
+            <p>Schrijf je in voor de waitlist of neem contact op via email.</p>
+            <form class="waitlist-form" id="waitlistForm">
+                <input type="email" placeholder="je@email.nl" required id="emailInput">
+                <button type="submit" class="btn btn-primary">Aanmelden</button>
+            </form>
+            <div class="success-msg" id="successMsg">Je staat op de lijst!</div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>BoxShift &mdash; Van Box 3 naar Box 2, zonder gedoe. &nbsp;|&nbsp; <a href="faq.html">FAQ</a> &nbsp;|&nbsp; <a href="#">Privacy</a> &nbsp;|&nbsp; <a href="#">Disclaimer</a></p>
+            <p style="margin-top: 8px; font-size: 0.78rem;">BoxShift verstrekt geen financieel of fiscaal advies. Raadpleeg altijd een belastingadviseur voor je persoonlijke situatie.</p>
+        </div>
+    </footer>
+    <script src="shared.js"></script>
+</body>
+</html>

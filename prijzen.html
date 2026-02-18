@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prijzen — BoxShift</title>
+    <meta name="description" content="BoxShift prijzen: BV oprichten vanaf €499, administratie vanaf €49/maand.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .price-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 36px;
+            background: var(--bg-card);
+            transition: transform 0.2s;
+        }
+        .price-card:hover { transform: translateY(-2px); }
+        .price-card.featured { border-color: var(--accent); position: relative; }
+        .price-card.featured:hover { box-shadow: 0 8px 32px rgba(88, 166, 255, 0.1); }
+        .price-card.featured::before {
+            content: "Populair";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: var(--bg);
+            padding: 4px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .price-card h3 { font-size: 1.2rem; margin-bottom: 4px; }
+        .price-card .desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
+        .price-card .price { font-size: 2.5rem; font-weight: 800; margin-bottom: 4px; }
+        .price-card .price span { font-size: 1rem; font-weight: 400; color: var(--text-muted); }
+        .price-card .period { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 28px; }
+        .price-card ul { list-style: none; margin-bottom: 28px; }
+        .price-card ul li {
+            padding: 6px 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .price-card ul li .check { color: var(--green); flex-shrink: 0; }
+        .price-card .btn { width: 100%; justify-content: center; }
+
+        .included-section { margin-top: 80px; }
+        .included-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .included-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+        }
+        .included-item .emoji { font-size: 1.8rem; margin-bottom: 12px; }
+        .included-item h4 { font-size: 0.95rem; margin-bottom: 6px; }
+        .included-item p { color: var(--text-muted); font-size: 0.82rem; }
+
+        .compare-section { margin-top: 80px; }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .compare-table th, .compare-table td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .compare-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .compare-table td:nth-child(2) { color: var(--red); text-align: center; }
+        .compare-table td:nth-child(3) { color: var(--green); text-align: center; }
+        .compare-table th:nth-child(2),
+        .compare-table th:nth-child(3) { text-align: center; }
+
+        @media (max-width: 768px) {
+            .pricing-grid { grid-template-columns: 1fr; }
+            .included-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#f85149"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#3fb950"/><path d="M10 6.5h4" stroke="#58a6ff"/><path d="M12 5l2 1.5-2 1.5" stroke="#58a6ff"/></svg>
+                Box<span>Shift</span>
+            </a>
+            <div class="nav-links">
+                <a href="hoe-het-werkt.html">Hoe het werkt</a>
+                <a href="calculator.html">Calculator</a>
+                <a href="prijzen.html" class="active">Prijzen</a>
+                <a href="faq.html">FAQ</a>
+                <a href="index.html#start" class="btn btn-primary">Aanmelden</a>
+            </div>
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="hoe-het-werkt.html">Hoe het werkt</a>
+        <a href="calculator.html">Calculator</a>
+        <a href="prijzen.html">Prijzen</a>
+        <a href="faq.html">FAQ</a>
+        <a href="index.html#start" class="btn btn-primary">Aanmelden</a>
+    </div>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1>Simpele, transparante prijzen</h1>
+            <p>BV oprichten + volledige AI-administratie. Geen verrassingen, geen verborgen kosten.</p>
+        </div>
+    </section>
+
+    <section style="padding-top: 0;">
+        <div class="container">
+            <div class="pricing-grid reveal">
+                <div class="price-card">
+                    <h3>Oprichting</h3>
+                    <p class="desc">Eenmalig &mdash; alles geregeld</p>
+                    <div class="price">&euro;499<span> eenmalig</span></div>
+                    <p class="period">Inclusief notaris, KvK, bankrekening begeleiding</p>
+                    <ul>
+                        <li><span class="check">&#10003;</span> BV oprichten bij de notaris</li>
+                        <li><span class="check">&#10003;</span> Inschrijving KvK + Belastingdienst</li>
+                        <li><span class="check">&#10003;</span> Hulp bij openen zakelijke beleggingsrekening</li>
+                        <li><span class="check">&#10003;</span> Begeleiding inbreng effecten</li>
+                        <li><span class="check">&#10003;</span> Statuten op maat voor beleggen</li>
+                    </ul>
+                    <a href="index.html#start" class="btn btn-secondary">Meer info</a>
+                </div>
+                <div class="price-card featured">
+                    <h3>Administratie</h3>
+                    <p class="desc">Maandelijks &mdash; alles automatisch</p>
+                    <div class="price">&euro;49<span>/maand</span></div>
+                    <p class="period">Jaarrekening + VPB-aangifte inbegrepen</p>
+                    <ul>
+                        <li><span class="check">&#10003;</span> Automatische bankkoppeling</li>
+                        <li><span class="check">&#10003;</span> AI-gestuurde boekhouding</li>
+                        <li><span class="check">&#10003;</span> Jaarrekening (balans + W&V)</li>
+                        <li><span class="check">&#10003;</span> VPB-aangifte klaar voor indienen</li>
+                        <li><span class="check">&#10003;</span> Dashboard met realtime inzicht</li>
+                    </ul>
+                    <a href="index.html#start" class="btn btn-primary">Start nu</a>
+                </div>
+            </div>
+
+            <div class="compare-section reveal">
+                <div class="section-header">
+                    <h2>BoxShift vs traditionele accountant</h2>
+                    <p>Waarom je met ons goedkoper en sneller uit bent</p>
+                </div>
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Accountant</th>
+                            <th>BoxShift</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>BV oprichten</td>
+                            <td>&euro;800-1.500</td>
+                            <td>&euro;499</td>
+                        </tr>
+                        <tr>
+                            <td>Jaarrekening</td>
+                            <td>&euro;1.000-2.500/jaar</td>
+                            <td>Inbegrepen</td>
+                        </tr>
+                        <tr>
+                            <td>VPB-aangifte</td>
+                            <td>&euro;500-1.000/jaar</td>
+                            <td>Inbegrepen</td>
+                        </tr>
+                        <tr>
+                            <td>Doorlooptijd</td>
+                            <td>Weken</td>
+                            <td>Realtime</td>
+                        </tr>
+                        <tr>
+                            <td>Totaal per jaar</td>
+                            <td>&euro;1.500-3.500</td>
+                            <td>&euro;588</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="included-section reveal">
+                <div class="section-header">
+                    <h2>Wat zit er allemaal in?</h2>
+                </div>
+                <div class="included-grid">
+                    <div class="included-item">
+                        <div class="emoji">&#128197;</div>
+                        <h4>Jaarrekening</h4>
+                        <p>Balans, winst- en verliesrekening, en toelichting. Automatisch gegenereerd.</p>
+                    </div>
+                    <div class="included-item">
+                        <div class="emoji">&#128202;</div>
+                        <h4>Dashboard</h4>
+                        <p>Realtime inzicht in je portefeuille, resultaten en belastingpositie.</p>
+                    </div>
+                    <div class="included-item">
+                        <div class="emoji">&#128230;</div>
+                        <h4>VPB-aangifte</h4>
+                        <p>Klaar voor indienen bij de Belastingdienst. Gerealiseerd en ongerealiseerd apart.</p>
+                    </div>
+                    <div class="included-item">
+                        <div class="emoji">&#128279;</div>
+                        <h4>Bank-koppeling</h4>
+                        <p>Automatisch transacties inlezen van je beleggingsrekening.</p>
+                    </div>
+                    <div class="included-item">
+                        <div class="emoji">&#128176;</div>
+                        <h4>Kostprijs-tracking</h4>
+                        <p>Effecten gewaardeerd op kostprijs. Alle aan/verkopen bijgehouden.</p>
+                    </div>
+                    <div class="included-item">
+                        <div class="emoji">&#128172;</div>
+                        <h4>Support</h4>
+                        <p>Vragen? Ons team helpt je via chat of email.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container reveal">
+            <h2>Klaar om te beginnen?</h2>
+            <p>Schrijf je in voor de waitlist. Wij nemen contact op zodra BoxShift live gaat.</p>
+            <form class="waitlist-form" id="waitlistForm">
+                <input type="email" placeholder="je@email.nl" required id="emailInput">
+                <button type="submit" class="btn btn-primary">Aanmelden</button>
+            </form>
+            <div class="success-msg" id="successMsg">Je staat op de lijst!</div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>BoxShift &mdash; Van Box 3 naar Box 2, zonder gedoe. &nbsp;|&nbsp; <a href="faq.html">FAQ</a> &nbsp;|&nbsp; <a href="#">Privacy</a> &nbsp;|&nbsp; <a href="#">Disclaimer</a></p>
+            <p style="margin-top: 8px; font-size: 0.78rem;">BoxShift verstrekt geen financieel of fiscaal advies. Raadpleeg altijd een belastingadviseur voor je persoonlijke situatie.</p>
+        </div>
+    </footer>
+    <script src="shared.js"></script>
+</body>
+</html>

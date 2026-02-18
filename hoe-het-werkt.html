@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoe het werkt — BoxShift</title>
+    <meta name="description" content="In drie stappen van Box 3 naar Box 2. BV oprichten, beleggingen inbrengen, AI regelt de administratie.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .timeline { max-width: 700px; margin: 0 auto; position: relative; }
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 28px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        .timeline-step {
+            position: relative;
+            padding-left: 72px;
+            padding-bottom: 48px;
+        }
+        .timeline-step:last-child { padding-bottom: 0; }
+        .timeline-dot {
+            position: absolute;
+            left: 12px;
+            top: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--accent);
+            z-index: 1;
+        }
+        .timeline-step.done .timeline-dot {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        .timeline-step h3 { font-size: 1.2rem; margin-bottom: 8px; }
+        .timeline-step p { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 12px; }
+        .detail-list { list-style: none; }
+        .detail-list li {
+            padding: 6px 0;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .detail-list .check { color: var(--green); flex-shrink: 0; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .feature-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+        }
+        .feature-icon.blue { background: rgba(88, 166, 255, 0.1); }
+        .feature-icon.green { background: rgba(63, 185, 80, 0.1); }
+        .feature-icon.purple { background: rgba(188, 140, 255, 0.1); }
+        .feature-icon.orange { background: rgba(210, 153, 34, 0.1); }
+        .feature-card h3 { font-size: 1rem; margin-bottom: 6px; }
+        .feature-card p { color: var(--text-muted); font-size: 0.88rem; }
+
+        @media (max-width: 768px) {
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#f85149"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#3fb950"/><path d="M10 6.5h4" stroke="#58a6ff"/><path d="M12 5l2 1.5-2 1.5" stroke="#58a6ff"/></svg>
+                Box<span>Shift</span>
+            </a>
+            <div class="nav-links">
+                <a href="hoe-het-werkt.html" class="active">Hoe het werkt</a>
+                <a href="calculator.html">Calculator</a>
+                <a href="prijzen.html">Prijzen</a>
+                <a href="faq.html">FAQ</a>
+                <a href="index.html#start" class="btn btn-primary">Aanmelden</a>
+            </div>
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="hoe-het-werkt.html">Hoe het werkt</a>
+        <a href="calculator.html">Calculator</a>
+        <a href="prijzen.html">Prijzen</a>
+        <a href="faq.html">FAQ</a>
+        <a href="index.html#start" class="btn btn-primary">Aanmelden</a>
+    </div>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1>Van Box 3 naar Box 2<br>in drie stappen</h1>
+            <p>BoxShift neemt je het hele proces uit handen. Van oprichting tot jaarlijkse VPB-aangifte &mdash; volledig geautomatiseerd.</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <div class="timeline reveal">
+                <div class="timeline-step">
+                    <div class="timeline-dot">1</div>
+                    <h3>BV oprichten</h3>
+                    <p>Wij regelen de oprichting van je beleggings-BV compleet. Alles digitaal, zo snel en goedkoop mogelijk.</p>
+                    <ul class="detail-list">
+                        <li><span class="check">&#10003;</span> Statuten op maat voor beleggen binnen je BV</li>
+                        <li><span class="check">&#10003;</span> Digitale oprichting bij de notaris</li>
+                        <li><span class="check">&#10003;</span> Inschrijving bij KvK en Belastingdienst</li>
+                        <li><span class="check">&#10003;</span> Hulp bij openen zakelijke beleggingsrekening</li>
+                        <li><span class="check">&#10003;</span> Binnen 5 werkdagen operationeel</li>
+                    </ul>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot">2</div>
+                    <h3>Beleggingen inbrengen</h3>
+                    <p>Verplaats je bestaande effectenportefeuille naar de rekening van je BV. Wij begeleiden het hele proces.</p>
+                    <ul class="detail-list">
+                        <li><span class="check">&#10003;</span> Waardering van je effecten op het moment van inbreng</li>
+                        <li><span class="check">&#10003;</span> Begeleiding bij overdracht naar zakelijke rekening</li>
+                        <li><span class="check">&#10003;</span> Administratieve verwerking van de inbreng</li>
+                        <li><span class="check">&#10003;</span> Samenwerking met fiscaal adviseur voor optimale timing</li>
+                        <li><span class="check">&#10003;</span> Correcte kostprijsadministratie vanaf dag 1</li>
+                    </ul>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot">3</div>
+                    <h3>AI doet de administratie</h3>
+                    <p>Zodra je BV draait, neemt onze AI de volledige administratie over. Je hoeft zelf niets meer te doen.</p>
+                    <ul class="detail-list">
+                        <li><span class="check">&#10003;</span> Automatisch inlezen van je beleggingsrekening</li>
+                        <li><span class="check">&#10003;</span> Categorisering: aankopen, verkopen, dividend, kosten</li>
+                        <li><span class="check">&#10003;</span> Jaarrekening met balans en W&V-rekening</li>
+                        <li><span class="check">&#10003;</span> Gerealiseerd vs ongerealiseerd resultaat apart verwerkt</li>
+                        <li><span class="check">&#10003;</span> VPB-aangifte klaar voor indienen</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Wat onze AI voor je doet</h2>
+                <p>Geen spreadsheets, geen accountant, geen handwerk</p>
+            </div>
+            <div class="feature-grid reveal">
+                <div class="feature-card">
+                    <div class="feature-icon blue">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <h3>Automatische jaarrekening</h3>
+                    <p>AI leest je beleggingsrekening uit en verwerkt alles in een volledige jaarrekening. Balans, W&V, toelichting.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <h3>VPB-aangifte ready</h3>
+                    <p>Op basis van je jaarrekening genereren we de VPB-aangifte. Gerealiseerd vs ongerealiseerd resultaat correct verwerkt.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon purple">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bc8cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <h3>Waardering op kostprijs</h3>
+                    <p>Effecten worden gewaardeerd op kostprijs op de balans. Correcte verwerking van alle transacties en corporate actions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon orange">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d29922" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    </div>
+                    <h3>Bank-koppeling</h3>
+                    <p>Koppel je zakelijke beleggingsrekening. Transacties worden automatisch ingelezen en gecategoriseerd.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container reveal">
+            <h2>Klaar om te beginnen?</h2>
+            <p>Schrijf je in voor de waitlist. Wij nemen contact op zodra BoxShift live gaat.</p>
+            <form class="waitlist-form" id="waitlistForm">
+                <input type="email" placeholder="je@email.nl" required id="emailInput">
+                <button type="submit" class="btn btn-primary">Aanmelden</button>
+            </form>
+            <div class="success-msg" id="successMsg">Je staat op de lijst!</div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>BoxShift &mdash; Van Box 3 naar Box 2, zonder gedoe. &nbsp;|&nbsp; <a href="faq.html">FAQ</a> &nbsp;|&nbsp; <a href="#">Privacy</a> &nbsp;|&nbsp; <a href="#">Disclaimer</a></p>
+            <p style="margin-top: 8px; font-size: 0.78rem;">BoxShift verstrekt geen financieel of fiscaal advies. Raadpleeg altijd een belastingadviseur voor je persoonlijke situatie.</p>
+        </div>
+    </footer>
+    <script src="shared.js"></script>
+</body>
+</html>
