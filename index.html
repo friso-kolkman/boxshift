@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoxShift — Ontsnap aan Box 3. Beleg via je eigen BV.</title>
+    <meta name="description" content="BoxShift helpt je goedkoop een beleggings-BV op te zetten en regelt de administratie automatisch met AI. Betaal alleen belasting over wat je echt verdient.">
+    <meta property="og:title" content="BoxShift — Van Box 3 naar Box 2, zonder gedoe">
+    <meta property="og:description" content="Vanaf 2028 betaal je 36% belasting over ongerealiseerde winsten. Via een beleggings-BV betaal je alleen over wat je echt verdient. BoxShift regelt alles.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-card: #161b22;
+            --bg-card-hover: #1c2333;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79b8ff;
+            --green: #3fb950;
+            --red: #f85149;
+            --orange: #d29922;
+            --purple: #bc8cff;
+            --radius: 12px;
+            --max-w: 1100px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* REVEAL ANIMATION */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: var(--max-w);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo span { color: var(--accent); }
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-links .btn {
+            color: var(--bg) !important;
+            padding: 8px 20px;
+        }
+
+        /* MOBILE MENU */
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .hamburger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: var(--text);
+            margin: 5px 0;
+            transition: all 0.3s;
+            border-radius: 1px;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            background: rgba(13, 17, 23, 0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px 24px;
+            z-index: 99;
+        }
+        .mobile-menu.open { display: block; }
+        .mobile-menu a {
+            display: block;
+            padding: 12px 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .mobile-menu a:last-child { border: none; }
+        .mobile-menu a:hover { color: var(--text); }
+        .mobile-menu .btn {
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+            color: var(--bg) !important;
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            border-color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .btn-large { padding: 16px 32px; font-size: 1.05rem; border-radius: 10px; }
+
+        /* SECTIONS */
+        section { padding: 100px 24px; }
+        .container { max-width: var(--max-w); margin: 0 auto; }
+
+        /* HERO */
+        .hero {
+            padding-top: 160px;
+            padding-bottom: 80px;
+            text-align: center;
+            position: relative;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse at center, rgba(88, 166, 255, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 32px;
+        }
+        .hero-badge .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p.hero-sub {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 640px;
+            margin: 0 auto 40px;
+        }
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* SOCIAL PROOF */
+        .social-proof {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+        .social-proof .avatars {
+            display: flex;
+        }
+        .social-proof .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--bg);
+            margin-left: -8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .social-proof .avatar:first-child { margin-left: 0; }
+        .social-proof .avatar.a1 { background: #1a5276; color: #85c1e9; }
+        .social-proof .avatar.a2 { background: #1e4620; color: #82e0aa; }
+        .social-proof .avatar.a3 { background: #4a235a; color: #d2b4de; }
+        .social-proof .avatar.a4 { background: #784212; color: #f0b27a; }
+        .social-proof .avatar.a5 { background: #1b2631; color: #aeb6bf; }
+
+        /* URGENCY BAR */
+        .urgency {
+            background: linear-gradient(90deg, rgba(248, 81, 73, 0.08), rgba(210, 153, 34, 0.08));
+            border: 1px solid rgba(248, 81, 73, 0.2);
+            border-radius: var(--radius);
+            padding: 20px 28px;
+            max-width: 720px;
+            margin: 48px auto 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .urgency-icon { font-size: 1.3rem; flex-shrink: 0; line-height: 1.6; }
+        .urgency p { font-size: 0.95rem; color: var(--text-muted); }
+        .urgency strong { color: var(--red); }
+
+        /* STAT BAR */
+        .stat-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 700px;
+            margin: 64px auto 0;
+            text-align: center;
+        }
+        .stat h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat p { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+
+        /* COMPARISON TABLE */
+        .comparison {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .section-header { text-align: center; margin-bottom: 48px; }
+        .section-header h2 { font-size: 2rem; margin-bottom: 12px; }
+        .section-header p { color: var(--text-muted); font-size: 1.05rem; }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .compare-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .compare-card:hover {
+            transform: translateY(-2px);
+        }
+        .compare-card.bad { background: rgba(248, 81, 73, 0.03); }
+        .compare-card.good {
+            background: rgba(63, 185, 80, 0.03);
+            border-color: var(--green);
+        }
+        .compare-card.good:hover {
+            box-shadow: 0 8px 32px rgba(63, 185, 80, 0.1);
+        }
+        .compare-card .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+        .compare-card.bad .tag { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+        .compare-card.good .tag { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+        .compare-card h3 { font-size: 1.4rem; margin-bottom: 8px; }
+        .compare-card .rate { font-size: 2.2rem; font-weight: 800; margin-bottom: 20px; }
+        .compare-card.bad .rate { color: var(--red); }
+        .compare-card.good .rate { color: var(--green); }
+        .compare-card ul { list-style: none; }
+        .compare-card ul li {
+            padding: 8px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .compare-card ul li .icon { flex-shrink: 0; font-size: 0.85rem; margin-top: 2px; }
+        .compare-card.bad .icon { color: var(--red); }
+        .compare-card.good .icon { color: var(--green); }
+
+        /* INTERACTIVE CALCULATOR */
+        .calculator {
+            margin-top: 48px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+        }
+        .calculator h4 {
+            margin-bottom: 24px;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .calc-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        .calc-field label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .calc-field input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+            margin-top: 4px;
+        }
+        .calc-field input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+        .calc-field input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+        .calc-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .calc-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+        .calc-result {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .calc-result.highlight-red { border-color: rgba(248, 81, 73, 0.3); }
+        .calc-result.highlight-green { border-color: rgba(63, 185, 80, 0.3); }
+        .calc-result.highlight-accent { border-color: rgba(88, 166, 255, 0.3); background: rgba(88, 166, 255, 0.03); }
+        .calc-result .label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 8px;
+        }
+        .calc-result .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        .calc-result.highlight-red .value { color: var(--red); }
+        .calc-result.highlight-green .value { color: var(--green); }
+        .calc-result.highlight-accent .value { color: var(--accent); }
+        .calc-note {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        /* HOW IT WORKS */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            position: relative;
+        }
+        .step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            transition: border-color 0.2s, transform 0.2s;
+            position: relative;
+        }
+        .step:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        .step h3 { font-size: 1.1rem; margin-bottom: 8px; }
+        .step p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* FEATURES */
+        .features {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .feature {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .feature:hover {
+            border-color: var(--border);
+            transform: translateY(-1px);
+        }
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+        }
+        .feature-icon.blue { background: rgba(88, 166, 255, 0.1); }
+        .feature-icon.green { background: rgba(63, 185, 80, 0.1); }
+        .feature-icon.purple { background: rgba(188, 140, 255, 0.1); }
+        .feature-icon.orange { background: rgba(210, 153, 34, 0.1); }
+        .feature h3 { font-size: 1rem; margin-bottom: 6px; }
+        .feature p { color: var(--text-muted); font-size: 0.88rem; }
+
+        /* FOR WHO */
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .persona {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            text-align: center;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .persona:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .persona-emoji { font-size: 2.5rem; margin-bottom: 16px; }
+        .persona h3 { font-size: 1.05rem; margin-bottom: 8px; }
+        .persona p { color: var(--text-muted); font-size: 0.88rem; }
+
+        /* PRICING */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .price-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 36px;
+            background: var(--bg-card);
+            transition: transform 0.2s;
+        }
+        .price-card:hover { transform: translateY(-2px); }
+        .price-card.featured {
+            border-color: var(--accent);
+            position: relative;
+        }
+        .price-card.featured:hover {
+            box-shadow: 0 8px 32px rgba(88, 166, 255, 0.1);
+        }
+        .price-card.featured::before {
+            content: "Populair";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: var(--bg);
+            padding: 4px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .price-card h3 { font-size: 1.2rem; margin-bottom: 4px; }
+        .price-card .desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
+        .price-card .price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .price-card .price span { font-size: 1rem; font-weight: 400; color: var(--text-muted); }
+        .price-card .period { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 28px; }
+        .price-card ul { list-style: none; margin-bottom: 28px; }
+        .price-card ul li {
+            padding: 6px 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .price-card ul li .check { color: var(--green); flex-shrink: 0; }
+        .price-card .btn { width: 100%; justify-content: center; }
+
+        /* FAQ */
+        .faq {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .faq-list { max-width: 720px; margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid var(--border); }
+        .faq-q {
+            padding: 20px 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            user-select: none;
+        }
+        .faq-q:hover { color: var(--accent); }
+        .faq-toggle {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            transition: transform 0.3s, background 0.2s;
+        }
+        .faq-item.open .faq-toggle {
+            transform: rotate(45deg);
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+        }
+        .faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .faq-item.open .faq-a { max-height: 500px; }
+        .faq-a p {
+            padding-bottom: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        /* CTA */
+        .final-cta {
+            text-align: center;
+            padding: 120px 24px;
+            position: relative;
+        }
+        .final-cta::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(ellipse at center, rgba(88, 166, 255, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .final-cta h2 {
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            margin-bottom: 16px;
+        }
+        .final-cta p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 540px;
+            margin: 0 auto 40px;
+        }
+
+        /* WAITLIST FORM */
+        .waitlist-form {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .waitlist-form input {
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .waitlist-form input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+        .waitlist-form input::placeholder { color: var(--text-muted); }
+        .waitlist-form .btn { white-space: nowrap; }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 24px;
+            text-align: center;
+        }
+        footer p { color: var(--text-muted); font-size: 0.85rem; }
+        footer a { color: var(--text-muted); text-decoration: none; }
+        footer a:hover { color: var(--text); }
+
+        /* SUCCESS MSG */
+        .success-msg {
+            display: none;
+            background: rgba(63, 185, 80, 0.1);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: var(--green);
+            max-width: 480px;
+            margin: 16px auto 0;
+            font-size: 0.9rem;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .compare-grid, .steps, .feature-grid, .pricing-grid, .persona-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-links { display: none; }
+            .hamburger { display: block; }
+            .waitlist-form { flex-direction: column; }
+            section { padding: 64px 20px; }
+            .hero { padding-top: 120px; padding-bottom: 60px; }
+            .stat-bar { grid-template-columns: 1fr; gap: 16px; }
+            .calc-inputs { grid-template-columns: 1fr; }
+            .calc-results { grid-template-columns: 1fr; }
+            .urgency { flex-direction: column; gap: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2rem; }
+            .btn-large { padding: 14px 24px; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="#top" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#f85149"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#3fb950"/><path d="M10 6.5h4" stroke="#58a6ff"/><path d="M12 5l2 1.5-2 1.5" stroke="#58a6ff"/></svg>
+                Box<span>Shift</span>
+            </a>
+            <div class="nav-links">
+                <a href="#vergelijk">Vergelijking</a>
+                <a href="#hoe">Hoe het werkt</a>
+                <a href="#prijzen">Prijzen</a>
+                <a href="#faq">FAQ</a>
+                <a href="#start" class="btn btn-primary">Aanmelden</a>
+            </div>
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#vergelijk">Vergelijking</a>
+        <a href="#hoe">Hoe het werkt</a>
+        <a href="#prijzen">Prijzen</a>
+        <a href="#faq">FAQ</a>
+        <a href="#start" class="btn btn-primary">Aanmelden</a>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero" id="top">
+        <div class="container">
+            <div class="hero-badge">
+                <span class="pulse"></span>
+                Wet werkelijk rendement aangenomen &mdash; 12 feb 2026
+            </div>
+            <h1>
+                Vanaf 2028 betaal je 36% belasting<br>
+                over geld dat je <span class="highlight">niet hebt verdiend</span>
+            </h1>
+            <p class="hero-sub">
+                De nieuwe Box 3-wet belast ongerealiseerde winsten. Via een beleggings-BV (Box 2) betaal je alleen belasting over wat je daadwerkelijk verdient. BoxShift regelt de oprichting en administratie &mdash; volledig geautomatiseerd met AI.
+            </p>
+            <div class="hero-cta">
+                <a href="#start" class="btn btn-primary btn-large">Schrijf je in voor de waitlist</a>
+                <a href="#vergelijk" class="btn btn-secondary btn-large">Bekijk de vergelijking</a>
+            </div>
+            <div class="social-proof">
+                <div class="avatars">
+                    <div class="avatar a1">JK</div>
+                    <div class="avatar a2">RM</div>
+                    <div class="avatar a3">SV</div>
+                    <div class="avatar a4">PL</div>
+                    <div class="avatar a5">+</div>
+                </div>
+                <span>Al <strong style="color: var(--text)">230+</strong> aanmeldingen op de waitlist</span>
+            </div>
+            <div class="urgency reveal">
+                <span class="urgency-icon">&#9888;</span>
+                <p>
+                    <strong>Wet werkelijk rendement</strong> is op 12 februari 2026 aangenomen door de Tweede Kamer.
+                    Ingangsdatum: <strong>1 januari 2028</strong>. Je hebt nog minder dan 2 jaar om je vermogen te herstructureren.
+                    Begin nu met voorbereiden.
+                </p>
+            </div>
+            <div class="stat-bar reveal">
+                <div class="stat">
+                    <h3>36%</h3>
+                    <p>Nieuwe Box 3 belasting<br>op werkelijk rendement</p>
+                </div>
+                <div class="stat">
+                    <h3>19%</h3>
+                    <p>VPB in je BV<br>tot &euro;200.000 winst</p>
+                </div>
+                <div class="stat">
+                    <h3>&euro;49/m</h3>
+                    <p>Volledige administratie<br>door AI geregeld</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPARISON -->
+    <section class="comparison" id="vergelijk">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Box 3 vs Box 2: de feiten</h2>
+                <p>Dezelfde beleggingen, compleet andere belastingregels</p>
+            </div>
+            <div class="compare-grid reveal">
+                <div class="compare-card bad">
+                    <span class="tag">Box 3 &mdash; Nieuw (2028)</span>
+                    <h3>Werkelijk rendement</h3>
+                    <div class="rate">36%</div>
+                    <ul>
+                        <li><span class="icon">&#10007;</span> Belasting over ongerealiseerde koerswinsten</li>
+                        <li><span class="icon">&#10007;</span> Elk jaar afrekenen, ook als je niets verkoopt</li>
+                        <li><span class="icon">&#10007;</span> Verliezen beperkt verrekenbaar</li>
+                        <li><span class="icon">&#10007;</span> Geen aftrek van beheerkosten</li>
+                        <li><span class="icon">&#10007;</span> Geen controle over timing van belasting</li>
+                    </ul>
+                </div>
+                <div class="compare-card good">
+                    <span class="tag">Box 2 &mdash; Beleggings-BV</span>
+                    <h3>Alleen gerealiseerd resultaat</h3>
+                    <div class="rate">19-26%</div>
+                    <ul>
+                        <li><span class="icon">&#10003;</span> Alleen belasting als je winst pakt of dividend uitkeert</li>
+                        <li><span class="icon">&#10003;</span> VPB: 19% tot &euro;200k, 25,8% daarboven</li>
+                        <li><span class="icon">&#10003;</span> Verliezen volledig verrekenbaar</li>
+                        <li><span class="icon">&#10003;</span> Beheerkosten zijn aftrekbaar</li>
+                        <li><span class="icon">&#10003;</span> Jij bepaalt wanneer je belasting betaalt</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="calculator reveal" id="calculator">
+                <h4>&#9889; Bereken je besparing</h4>
+                <div class="calc-inputs">
+                    <div class="calc-field">
+                        <label>Belegd vermogen</label>
+                        <div class="calc-value" id="capitalDisplay">&euro;500.000</div>
+                        <input type="range" id="capitalSlider" min="50000" max="2000000" step="10000" value="500000">
+                    </div>
+                    <div class="calc-field">
+                        <label>Verwacht jaarlijks rendement</label>
+                        <div class="calc-value" id="returnDisplay">8%</div>
+                        <input type="range" id="returnSlider" min="2" max="20" step="1" value="8">
+                    </div>
+                </div>
+                <div class="calc-results">
+                    <div class="calc-result highlight-red">
+                        <div class="label">Box 3 belasting</div>
+                        <div class="value" id="box3Tax">&euro;14.400</div>
+                    </div>
+                    <div class="calc-result highlight-green">
+                        <div class="label">Box 2 belasting (VPB)</div>
+                        <div class="value" id="box2Tax">&euro;7.600</div>
+                    </div>
+                    <div class="calc-result highlight-accent">
+                        <div class="label">Jaarlijkse besparing</div>
+                        <div class="value" id="savings">&euro;6.800</div>
+                    </div>
+                </div>
+                <p class="calc-note">
+                    * Vereenvoudigd voorbeeld bij herinvesteren binnen de BV (geen dividend). Bij dividend uitkeren komt er 24,5-33% AB-heffing bovenop. Het voordeel zit vooral in het uitstellen van belasting en compound growth binnen de BV. Exacte besparing hangt af van je situatie.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how" id="hoe">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Hoe BoxShift werkt</h2>
+                <p>Van Box 3 naar Box 2 in drie stappen</p>
+            </div>
+            <div class="steps reveal">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>BV oprichten</h3>
+                    <p>Wij regelen de oprichting van je beleggings-BV bij de notaris. Zo goedkoop en snel mogelijk. Alles digitaal, binnen 5 werkdagen klaar.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Beleggingen inbrengen</h3>
+                    <p>Verplaats je effecten naar de rekening van je BV. We begeleiden je bij de juiste waardering op kostprijs en de administratieve verwerking.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>AI doet de rest</h3>
+                    <p>Onze AI leest je bankgegevens in, verwerkt transacties automatisch in een jaarrekening en maakt je VPB-aangifte. Gerealiseerd, ongerealiseerd, dividend &mdash; alles klopt.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Waarom BoxShift</h2>
+                <p>Alles wat je nodig hebt om zorgeloos via je BV te beleggen</p>
+            </div>
+            <div class="feature-grid reveal">
+                <div class="feature">
+                    <div class="feature-icon blue">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <h3>Automatische jaarrekening</h3>
+                    <p>AI leest je beleggingsrekening uit en verwerkt alles in een volledige jaarrekening. Balans, W&V, toelichting &mdash; klaar voor de accountant.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <h3>VPB-aangifte ready</h3>
+                    <p>Op basis van je jaarrekening genereren we de vennootschapsbelasting-aangifte. Gerealiseerd vs ongerealiseerd resultaat correct verwerkt.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon purple">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bc8cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <h3>Waardering op kostprijs</h3>
+                    <p>Effecten worden gewaardeerd op kostprijs op de balans. Correcte verwerking van aan- en verkopen, dividendontvangsten en corporate actions.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon orange">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d29922" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    </div>
+                    <h3>Bank-koppeling</h3>
+                    <p>Koppel je zakelijke beleggingsrekening. Transacties worden automatisch ingelezen en gecategoriseerd. Geen handmatig invoeren meer.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOR WHO -->
+    <section class="for-who">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Voor wie is BoxShift?</h2>
+                <p>Of je nu &euro;100k of &euro;10M belegt &mdash; als Box 3 je raakt, helpen wij</p>
+            </div>
+            <div class="persona-grid reveal">
+                <div class="persona">
+                    <div class="persona-emoji">&#128200;</div>
+                    <h3>Particuliere beleggers</h3>
+                    <p>Je hebt een ETF- of aandelenportefeuille en wilt niet 36% over papieren winst betalen. Via je BV beleg je fiscaal slimmer.</p>
+                </div>
+                <div class="persona">
+                    <div class="persona-emoji">&#128188;</div>
+                    <h3>Startup medewerkers</h3>
+                    <p>Je hebt aandelen of opties ontvangen van je werkgever. Breng ze onder in een BV en voorkom Box 3-heffing over de waardestijging.</p>
+                </div>
+                <div class="persona">
+                    <div class="persona-emoji">&#127968;</div>
+                    <h3>Vermogende spaarders</h3>
+                    <p>Je hebt meer dan het vrijgestelde bedrag op de bank of in beleggingen. Een BV-structuur kan fors schelen in belastingdruk.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="pricing" id="prijzen">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Simpele prijzen</h2>
+                <p>BV oprichten + administratie voor een vaste prijs per maand</p>
+            </div>
+            <div class="pricing-grid reveal">
+                <div class="price-card">
+                    <h3>Oprichting</h3>
+                    <p class="desc">Eenmalig &mdash; alles geregeld</p>
+                    <div class="price">&euro;499<span> eenmalig</span></div>
+                    <p class="period">Inclusief notaris, KvK, bankrekening begeleiding</p>
+                    <ul>
+                        <li><span class="check">&#10003;</span> BV oprichten bij de notaris</li>
+                        <li><span class="check">&#10003;</span> Inschrijving KvK + Belastingdienst</li>
+                        <li><span class="check">&#10003;</span> Hulp bij openen zakelijke beleggingsrekening</li>
+                        <li><span class="check">&#10003;</span> Begeleiding inbreng effecten</li>
+                        <li><span class="check">&#10003;</span> Statuten op maat voor beleggen</li>
+                    </ul>
+                    <a href="#start" class="btn btn-secondary">Meer info</a>
+                </div>
+                <div class="price-card featured">
+                    <h3>Administratie</h3>
+                    <p class="desc">Maandelijks &mdash; alles automatisch</p>
+                    <div class="price">&euro;49<span>/maand</span></div>
+                    <p class="period">Jaarrekening + VPB-aangifte inbegrepen</p>
+                    <ul>
+                        <li><span class="check">&#10003;</span> Automatische bankkoppeling</li>
+                        <li><span class="check">&#10003;</span> AI-gestuurde boekhouding</li>
+                        <li><span class="check">&#10003;</span> Jaarrekening (balans + W&V)</li>
+                        <li><span class="check">&#10003;</span> VPB-aangifte klaar voor indienen</li>
+                        <li><span class="check">&#10003;</span> Dashboard met realtime inzicht</li>
+                    </ul>
+                    <a href="#start" class="btn btn-primary">Start nu</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Veelgestelde vragen</h2>
+            </div>
+            <div class="faq-list reveal">
+                <div class="faq-item">
+                    <div class="faq-q">Wat verandert er precies in Box 3? <span class="faq-toggle">+</span></div>
+                    <div class="faq-a"><p>De Tweede Kamer heeft op 12 februari 2026 de Wet werkelijk rendement aangenomen. Vanaf 1 januari 2028 wordt je werkelijke rendement belast tegen 36%, inclusief ongerealiseerde koerswinsten. Dat betekent: als je aandelen in waarde stijgen maar je verkoopt niets, betaal je toch belasting.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Waarom is een beleggings-BV voordeliger? <span class="faq-toggle">+</span></div>
+                    <div class="faq-a"><p>In een BV (Box 2) betaal je vennootschapsbelasting over gerealiseerde winst: 19% tot &euro;200.000, daarboven 25,8%. Je betaalt pas AB-heffing (24,5-33%) als je dividend uitkeert. Zolang je herinvesteert binnen de BV, groeit je vermogen belastingvrij door. Bovendien zijn kosten aftrekbaar en verliezen verrekenbaar.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Vanaf welk bedrag loont een BV? <span class="faq-toggle">+</span></div>
+                    <div class="faq-a"><p>Als vuistregel: vanaf ca. &euro;100.000 aan belegd vermogen kan een BV-structuur interessant zijn, afhankelijk van je verwachte rendement en uitkeergedrag. Hoe hoger het vermogen en hoe langer je horizon, hoe groter het voordeel door uitgestelde belastingheffing.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Wat als mijn beleggingen in waarde dalen? <span class="faq-toggle">+</span></div>
+                    <div class="faq-a"><p>In Box 3 (nieuw) betaal je in een verliesjaar geen belasting, maar verliesverrekening is beperkt. In een BV zijn verliezen volledig verrekenbaar met toekomstige winsten. Dat is een groot voordeel in volatiele markten.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Hoe werkt de AI-administratie? <span class="faq-toggle">+</span></div>
+                    <div class="faq-a"><p>Je koppelt je zakelijke beleggingsrekening aan BoxShift. Onze AI leest automatisch alle transacties in, categoriseert ze (aankopen, verkopen, dividend, kosten), en verwerkt alles in een jaarrekening. De balans wordt op kostprijs gewaardeerd, de W&V toont gerealiseerd en ongerealiseerd resultaat apart. Op basis hiervan wordt je VPB-aangifte gegenereerd.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Kan ik mijn bestaande aandelen en ETF's inbrengen? <span class="faq-toggle">+</span></div>
+                    <div class="faq-a"><p>Ja. Je kunt effecten inbrengen in je BV tegen de huidige marktwaarde. Let op: dit kan als vervreemding gelden in Box 3, dus timing is belangrijk. Wij begeleiden je bij de optimale aanpak en werken samen met fiscaal adviseurs.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Ik heb aandelen van mijn werkgever (startup). Kan dat ook? <span class="faq-toggle">+</span></div>
+                    <div class="faq-a"><p>Absoluut. Startup-aandelen of opties kun je onderbrengen in een BV. Zo voorkom je dat toekomstige waardestijging in Box 3 belast wordt tegen 36%. Ideaal voor werknemers van snelgroeiende bedrijven.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Moet de wet nog door de Eerste Kamer? <span class="faq-toggle">+</span></div>
+                    <div class="faq-a"><p>Ja, de Eerste Kamer (Senaat) moet nog stemmen. Maar gezien de politieke steun en de ingangsdatum van 1 januari 2028 is het verstandig om nu al voor te bereiden. De oprichting van een BV kost tijd en je wilt klaar zijn voordat de wet ingaat.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="final-cta" id="start">
+        <div class="container reveal">
+            <h2>Klaar om je vermogen te beschermen?</h2>
+            <p>Schrijf je in voor de waitlist en wees als eerste klaar wanneer BoxShift lanceert. Geen spam, alleen updates.</p>
+            <form class="waitlist-form" id="waitlistForm">
+                <input type="email" placeholder="je@email.nl" required id="emailInput">
+                <button type="submit" class="btn btn-primary">Aanmelden</button>
+            </form>
+            <div class="success-msg" id="successMsg">
+                Je staat op de lijst! We nemen contact op zodra BoxShift live gaat.
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>
+                BoxShift &mdash; Van Box 3 naar Box 2, zonder gedoe. &nbsp;|&nbsp;
+                <a href="#">Privacy</a> &nbsp;|&nbsp;
+                <a href="#">Disclaimer</a>
+            </p>
+            <p style="margin-top: 8px; font-size: 0.78rem;">
+                BoxShift verstrekt geen financieel of fiscaal advies. Raadpleeg altijd een belastingadviseur voor je persoonlijke situatie.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('open');
+        });
+        // Close mobile menu on link click
+        mobileMenu.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('open');
+            });
+        });
+
+        // FAQ toggle
+        document.querySelectorAll('.faq-q').forEach(q => {
+            q.addEventListener('click', () => {
+                const item = q.parentElement;
+                // Close others
+                document.querySelectorAll('.faq-item.open').forEach(open => {
+                    if (open !== item) open.classList.remove('open');
+                });
+                item.classList.toggle('open');
+            });
+        });
+
+        // Waitlist form
+        document.getElementById('waitlistForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            console.log('Waitlist signup:', email);
+            document.getElementById('waitlistForm').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'block';
+        });
+
+        // Interactive calculator
+        const capitalSlider = document.getElementById('capitalSlider');
+        const returnSlider = document.getElementById('returnSlider');
+        const capitalDisplay = document.getElementById('capitalDisplay');
+        const returnDisplay = document.getElementById('returnDisplay');
+        const box3TaxEl = document.getElementById('box3Tax');
+        const box2TaxEl = document.getElementById('box2Tax');
+        const savingsEl = document.getElementById('savings');
+
+        function formatCurrency(n) {
+            return '\u20AC' + Math.round(n).toLocaleString('nl-NL');
+        }
+
+        function calculateTax() {
+            const capital = parseInt(capitalSlider.value);
+            const returnRate = parseInt(returnSlider.value) / 100;
+            const profit = capital * returnRate;
+
+            // Box 3: 36% flat on actual return
+            const box3 = profit * 0.36;
+
+            // Box 2 (BV): VPB only when reinvesting
+            // 19% up to 200k, 25.8% above
+            let box2;
+            if (profit <= 200000) {
+                box2 = profit * 0.19;
+            } else {
+                box2 = 200000 * 0.19 + (profit - 200000) * 0.258;
+            }
+
+            const saving = box3 - box2;
+
+            capitalDisplay.textContent = formatCurrency(capital);
+            returnDisplay.textContent = returnSlider.value + '%';
+            box3TaxEl.textContent = formatCurrency(box3);
+            box2TaxEl.textContent = formatCurrency(box2);
+            savingsEl.textContent = formatCurrency(saving);
+        }
+
+        capitalSlider.addEventListener('input', calculateTax);
+        returnSlider.addEventListener('input', calculateTax);
+        calculateTax();
+
+        // Scroll reveal
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        revealElements.forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
