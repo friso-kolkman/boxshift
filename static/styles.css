@@ -89,6 +89,10 @@ nav {
     color: var(--bg) !important;
     padding: 8px 20px;
 }
+.nav-links .btn-outline {
+    color: var(--text) !important;
+    background: transparent;
+}
 
 /* MOBILE MENU */
 .hamburger {
@@ -140,6 +144,10 @@ nav {
     display: flex;
     justify-content: center;
     color: var(--bg) !important;
+}
+.mobile-menu .btn-outline {
+    color: var(--text) !important;
+    background: transparent;
 }
 
 /* BUTTONS */
