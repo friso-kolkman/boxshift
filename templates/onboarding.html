@@ -4,8 +4,8 @@
 {% block content %}
 <div style="max-width: 560px; margin: 0 auto;">
     <div style="text-align: center; margin-bottom: 40px;">
-        <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">Start met BoxShift</h1>
-        <p style="color: var(--text-muted);">Vul je gegevens in en we zetten je beleggings-BV klaar</p>
+        <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">Welkom bij BoxShift</h1>
+        <p style="color: var(--text-muted);">Vul je gegevens aan en we zetten je beleggings-BV klaar</p>
     </div>
 
     {% if error %}
@@ -17,12 +17,7 @@
     <form action="/api/onboard" method="POST" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px;">
         <div class="form-group">
             <label>Volledige naam *</label>
-            <input type="text" name="name" placeholder="Jan Jansen" required>
-        </div>
-
-        <div class="form-group">
-            <label>E-mailadres *</label>
-            <input type="email" name="email" placeholder="jan@email.nl" required>
+            <input type="text" name="name" placeholder="Jan Jansen" required value="{{ user.name if user else '' }}">
         </div>
 
         <div class="form-group">
@@ -60,12 +55,8 @@
         </div>
 
         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; justify-content: center; margin-top: 8px;">
-            Account aanmaken
+            Aan de slag
         </button>
     </form>
-
-    <p style="text-align: center; margin-top: 16px; font-size: 0.8rem; color: var(--text-muted);">
-        Door je aan te melden ga je akkoord met onze voorwaarden. BoxShift verstrekt geen fiscaal advies.
-    </p>
 </div>
 {% endblock %}

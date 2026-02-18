@@ -7,147 +7,47 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
     <link rel="stylesheet" href="/static/styles.css">
     <style>
-        /* App-specific styles */
-        .app-nav {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-        .app-nav a {
-            padding: 8px 16px;
-            border-radius: 8px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            border: 1px solid var(--border);
-            transition: all 0.2s;
-        }
-        .app-nav a:hover, .app-nav a.active {
-            color: var(--text);
-            border-color: var(--accent);
-            background: rgba(88, 166, 255, 0.05);
-        }
-        .page-content {
-            padding-top: 100px;
-            min-height: 100vh;
-        }
+        .app-nav { display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
+        .app-nav a { padding: 8px 16px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; border: 1px solid var(--border); transition: all 0.2s; }
+        .app-nav a:hover, .app-nav a.active { color: var(--text); border-color: var(--accent); background: rgba(88, 166, 255, 0.05); }
+        .page-content { padding-top: 100px; min-height: 100vh; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .metric-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-        }
-        .metric-card .label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-        .metric-card .value {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
+        .metric-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+        .metric-card .label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+        .metric-card .value { font-size: 1.8rem; font-weight: 700; }
         .metric-card .value.green { color: var(--green); }
         .metric-card .value.red { color: var(--red); }
         .metric-card .value.blue { color: var(--accent); }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        th {
-            text-align: left;
-            padding: 12px 16px;
-            border-bottom: 2px solid var(--border);
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
         tr:hover td { background: rgba(255,255,255,0.02); }
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
         .badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
         .badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
         .badge-blue { background: rgba(88,166,255,0.15); color: var(--accent); }
         .badge-orange { background: rgba(210,153,34,0.15); color: var(--orange); }
         .badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
         .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text);
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
-        }
-        .amount-pos { color: var(--green); }
-        .amount-neg { color: var(--red); }
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        .report-table {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-        }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1); }
+        .section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; }
+        .report-table { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
         .report-table table { margin: 0; }
-        .report-table th {
-            background: rgba(88, 166, 255, 0.05);
-        }
-        .report-row-total td {
-            font-weight: 700;
-            border-top: 2px solid var(--border);
-        }
-        .empty-state {
-            text-align: center;
-            padding: 60px 24px;
-            color: var(--text-muted);
-        }
+        .report-table th { background: rgba(88, 166, 255, 0.05); }
+        .report-row-total td { font-weight: 700; border-top: 2px solid var(--border); }
+        .empty-state { text-align: center; padding: 60px 24px; color: var(--text-muted); }
         .empty-state h3 { color: var(--text); margin-bottom: 8px; }
-        .upload-zone {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            background: var(--bg-card);
-        }
+        .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: border-color 0.2s; background: var(--bg-card); }
         .upload-zone:hover { border-color: var(--accent); }
         .upload-zone input[type="file"] { display: none; }
-        @media (max-width: 768px) {
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-        }
+        .user-menu { display: flex; align-items: center; gap: 12px; }
+        .user-menu img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); }
+        .user-menu a.logout { color: var(--text-muted); font-size: 0.85rem; text-decoration: none; }
+        .user-menu a.logout:hover { color: var(--red); }
+        @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -160,13 +60,19 @@
             </a>
             <div class="nav-links">
                 {% if user is defined and user %}
-                <a href="/dashboard/{{ user.id }}">Dashboard</a>
-                <a href="/transactions/{{ user.id }}">Transacties</a>
-                <a href="/annual-report/{{ user.id }}">Jaarrekening</a>
-                <a href="/vpb/{{ user.id }}">VPB</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/transactions">Transacties</a>
+                <a href="/annual-report">Jaarrekening</a>
+                <a href="/vpb">VPB</a>
+                <div class="user-menu">
+                    {% if user.avatar_url %}
+                    <img src="{{ user.avatar_url }}" alt="{{ user.name }}">
+                    {% endif %}
+                    <a href="/logout" class="logout">Uitloggen</a>
+                </div>
                 {% else %}
                 <a href="/">Home</a>
-                <a href="/onboarding" class="btn btn-primary" style="color: var(--bg) !important; padding: 8px 20px;">Start</a>
+                <a href="/login" class="btn btn-primary" style="color: var(--bg) !important; padding: 8px 20px;">Inloggen</a>
                 {% endif %}
             </div>
             <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -176,13 +82,14 @@
     </nav>
     <div class="mobile-menu" id="mobileMenu">
         {% if user is defined and user %}
-        <a href="/dashboard/{{ user.id }}">Dashboard</a>
-        <a href="/transactions/{{ user.id }}">Transacties</a>
-        <a href="/annual-report/{{ user.id }}">Jaarrekening</a>
-        <a href="/vpb/{{ user.id }}">VPB</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/transactions">Transacties</a>
+        <a href="/annual-report">Jaarrekening</a>
+        <a href="/vpb">VPB</a>
+        <a href="/logout">Uitloggen</a>
         {% else %}
         <a href="/">Home</a>
-        <a href="/onboarding" class="btn btn-primary">Start</a>
+        <a href="/login" class="btn btn-primary">Inloggen</a>
         {% endif %}
     </div>
 
@@ -199,7 +106,6 @@
     </footer>
 
     <script>
-        // Mobile menu toggle
         const hamburger = document.getElementById('hamburger');
         const mobileMenu = document.getElementById('mobileMenu');
         if (hamburger && mobileMenu) {

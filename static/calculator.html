@@ -256,6 +256,18 @@
                         <input type="range" id="returnSlider" min="2" max="20" step="1" value="8">
                         <div class="calc-range-labels"><span>2%</span><span>20%</span></div>
                     </div>
+                    <div class="calc-field" style="grid-column: 1 / -1;">
+                        <label>DGA-salaris (gebruikelijk loon)</label>
+                        <div class="calc-value" id="dgaDisplay">&euro;0 <span style="font-size: 0.5em; color: var(--text-muted);">passief beleggen</span></div>
+                        <input type="range" id="dgaSlider" min="0" max="56000" step="1000" value="0">
+                        <div class="calc-range-labels">
+                            <span>&euro;0 (passief)</span>
+                            <span>&euro;56k (volledig)</span>
+                        </div>
+                        <div id="dgaNote" style="margin-top: 8px; font-size: 0.8rem; color: var(--green); transition: color 0.2s;">
+                            Bij passief beleggen (ETFs/aandelen kopen en houden) is er een sterk argument voor geen of minimaal DGA-salaris.
+                        </div>
+                    </div>
                 </div>
 
                 <div class="results-grid">
@@ -291,6 +303,11 @@
                             <td>Belasting</td>
                             <td class="col-red" id="d_tax3">&euro;14.400</td>
                             <td class="col-green" id="d_tax2">&euro;7.600</td>
+                        </tr>
+                        <tr id="dgaRow" style="display: none;">
+                            <td>DGA-salaris kosten BV <span style="font-size:0.75em; color:var(--text-muted);">(bruto + WG-lasten ~30%)</span></td>
+                            <td>—</td>
+                            <td class="col-green" id="d_dga">&euro;0</td>
                         </tr>
                         <tr>
                             <td>Netto (bij herinvesteren)</td>
@@ -336,10 +353,12 @@
     <script>
         const capitalSlider = document.getElementById('capitalSlider');
         const returnSlider = document.getElementById('returnSlider');
+        const dgaSlider = document.getElementById('dgaSlider');
 
         function fmt(n) { return '\u20AC' + Math.round(n).toLocaleString('nl-NL'); }
 
         function vpb(profit) {
+            if (profit <= 0) return 0;
             if (profit <= 200000) return profit * 0.19;
             return 200000 * 0.19 + (profit - 200000) * 0.258;
         }
@@ -347,13 +366,37 @@
         function calculate() {
             const capital = parseInt(capitalSlider.value);
             const rate = parseInt(returnSlider.value) / 100;
+            const dgaSalary = parseInt(dgaSlider.value);
             const profit = capital * rate;
 
+            // DGA salary cost to BV: bruto + ~30% werkgeverslasten
+            const dgaCostBV = dgaSalary * 1.3;
+
+            // Box 3: unchanged by DGA salary
             const tax3 = profit * 0.36;
-            const tax2 = vpb(profit);
-            const saving = tax3 - tax2;
             const net3 = profit - tax3;
-            const net2 = profit - tax2;
+
+            // Box 2: VPB on (profit - dga cost), then dga cost comes out of BV
+            const taxableProfit2 = Math.max(0, profit - dgaCostBV);
+            const tax2 = vpb(taxableProfit2);
+            const net2 = profit - tax2 - dgaCostBV;
+
+            const saving = tax3 - tax2;
+
+            // DGA display
+            if (dgaSalary === 0) {
+                document.getElementById('dgaDisplay').innerHTML = fmt(0) + ' <span style="font-size: 0.5em; color: var(--text-muted);">passief beleggen</span>';
+                document.getElementById('dgaNote').style.color = 'var(--green)';
+                document.getElementById('dgaNote').textContent = 'Bij passief beleggen (ETFs/aandelen kopen en houden) is er een sterk argument voor geen of minimaal DGA-salaris.';
+            } else {
+                document.getElementById('dgaDisplay').innerHTML = fmt(dgaSalary) + ' <span style="font-size: 0.5em; color: var(--text-muted);">per jaar bruto</span>';
+                document.getElementById('dgaNote').style.color = 'var(--text-muted)';
+                document.getElementById('dgaNote').textContent = 'BV-kosten: ' + fmt(dgaCostBV) + '/jaar (incl. ~30% werkgeverslasten). Dit verlaagt de winst en dus de VPB.';
+            }
+
+            // Show/hide DGA row
+            document.getElementById('dgaRow').style.display = dgaSalary > 0 ? '' : 'none';
+            document.getElementById('d_dga').textContent = dgaSalary > 0 ? fmt(dgaCostBV) : fmt(0);
 
             document.getElementById('capitalDisplay').textContent = fmt(capital);
             document.getElementById('returnDisplay').textContent = returnSlider.value + '%';
@@ -368,14 +411,15 @@
             document.getElementById('d_net3').textContent = fmt(net3);
             document.getElementById('d_net2').textContent = fmt(net2);
 
-            // 10-year projection
+            // 10-year projection (includes DGA cost for Box 2)
             let val3 = capital, val2 = capital;
             const years = [];
             for (let y = 1; y <= 10; y++) {
                 const p3 = val3 * rate;
                 val3 = val3 + p3 - (p3 * 0.36);
                 const p2 = val2 * rate;
-                val2 = val2 + p2 - vpb(p2);
+                const tp2 = Math.max(0, p2 - dgaCostBV);
+                val2 = val2 + p2 - vpb(tp2) - dgaCostBV;
                 years.push({ year: y, box3: val3, box2: val2 });
             }
 
@@ -400,6 +444,7 @@
 
         capitalSlider.addEventListener('input', calculate);
         returnSlider.addEventListener('input', calculate);
+        dgaSlider.addEventListener('input', calculate);
         calculate();
     </script>
 </body>

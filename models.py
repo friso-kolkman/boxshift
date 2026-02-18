@@ -20,10 +20,14 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
+    github_id = Column(Integer, nullable=True, unique=True)
+    github_username = Column(String, nullable=True)
+    avatar_url = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     vermogen_estimate = Column(Integer, default=0)
     broker = Column(String, default="degiro")  # degiro / ib / lynx / other
     situation = Column(String, default="particulier")  # particulier / startup_employee / dga
+    onboarded = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     bvs = relationship("BV", back_populates="user")

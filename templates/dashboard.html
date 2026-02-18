@@ -62,8 +62,7 @@
 <!-- CSV Upload -->
 <div style="margin-bottom: 32px;">
     <div class="section-title">Transacties importeren</div>
-    <form action="/api/import" method="POST" enctype="multipart/form-data" id="uploadForm">
-        <input type="hidden" name="user_id" value="{{ user.id }}">
+    <form action="/api/import" method="POST" enctype="multipart/form-data">
         <div class="grid-2">
             <div class="form-group">
                 <label>Broker</label>
@@ -86,11 +85,11 @@
 
 <!-- Quick actions -->
 <div class="grid-2">
-    <a href="/annual-report/{{ user.id }}" class="metric-card" style="text-decoration: none; display: block;">
+    <a href="/annual-report" class="metric-card" style="text-decoration: none; display: block;">
         <div class="label">Jaarrekening</div>
         <div style="color: var(--text); font-weight: 600;">Genereer jaarrekening &rarr;</div>
     </a>
-    <a href="/vpb/{{ user.id }}" class="metric-card" style="text-decoration: none; display: block;">
+    <a href="/vpb" class="metric-card" style="text-decoration: none; display: block;">
         <div class="label">Belasting</div>
         <div style="color: var(--text); font-weight: 600;">Bereken VPB &rarr;</div>
     </a>

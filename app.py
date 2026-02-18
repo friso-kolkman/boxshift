@@ -1,10 +1,11 @@
 """BoxShift Flask application — beleggings-BV automation platform."""
 
 import os
-import sys
+import functools
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template, redirect, url_for, send_from_directory
-from sqlalchemy import create_engine, func
+import requests as http_requests
+from flask import Flask, request, jsonify, render_template, redirect, url_for, send_from_directory, session
+from sqlalchemy import create_engine, extract
 from sqlalchemy.orm import sessionmaker
 
 import config
@@ -27,6 +28,163 @@ engine, Session = init_db(config.DATABASE_URL)
 
 def get_db():
     return Session()
+
+
+# ─── Auth helpers ─────────────────────────────────────────────────────────
+
+def login_required(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def get_current_user(db):
+    user_id = session.get("user_id")
+    if not user_id:
+        return None
+    return db.query(User).get(user_id)
+
+
+# ─── GitHub OAuth ─────────────────────────────────────────────────────────
+
+GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
+GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
+GITHUB_API_URL = "https://api.github.com"
+
+
+@app.route("/login")
+def login():
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
+
+    # If no GitHub OAuth configured, show setup instructions
+    if not config.GITHUB_CLIENT_ID:
+        return render_template("login.html", no_oauth=True)
+
+    return render_template("login.html", no_oauth=False)
+
+
+@app.route("/auth/github")
+def github_login():
+    """Redirect to GitHub OAuth."""
+    if not config.GITHUB_CLIENT_ID:
+        return redirect(url_for("login"))
+
+    redirect_uri = config.APP_URL + "/auth/github/callback"
+    url = f"{GITHUB_AUTHORIZE_URL}?client_id={config.GITHUB_CLIENT_ID}&redirect_uri={redirect_uri}&scope=user:email"
+    return redirect(url)
+
+
+@app.route("/auth/github/callback")
+def github_callback():
+    """Handle GitHub OAuth callback."""
+    if not config.GITHUB_CLIENT_ID:
+        return redirect(url_for("login"))
+
+    code = request.args.get("code")
+    if not code:
+        return redirect(url_for("login"))
+
+    # Exchange code for token
+    token_resp = http_requests.post(
+        GITHUB_TOKEN_URL,
+        headers={"Accept": "application/json"},
+        data={
+            "client_id": config.GITHUB_CLIENT_ID,
+            "client_secret": config.GITHUB_CLIENT_SECRET,
+            "code": code,
+            "redirect_uri": config.APP_URL + "/auth/github/callback",
+        },
+    )
+    token_data = token_resp.json()
+    access_token = token_data.get("access_token")
+
+    if not access_token:
+        return render_template("login.html", error="GitHub login mislukt. Probeer opnieuw.")
+
+    # Get user info from GitHub
+    resp = http_requests.get(
+        GITHUB_API_URL + "/user",
+        headers={"Authorization": f"Bearer {access_token}", "Accept": "application/json"},
+    )
+    gh_user = resp.json()
+
+    github_username = gh_user.get("login", "")
+    github_id = gh_user.get("id")
+    name = gh_user.get("name") or github_username
+    email = gh_user.get("email") or f"{github_username}@github.com"
+    avatar_url = gh_user.get("avatar_url", "")
+
+    # Check if user is allowed
+    if config.ALLOWED_GITHUB_USERS and github_username not in config.ALLOWED_GITHUB_USERS:
+        return render_template("login.html", error=f"@{github_username} heeft geen toegang. Neem contact op met de beheerder.")
+
+    db = get_db()
+    try:
+        # Find or create user
+        user = db.query(User).filter_by(github_id=github_id).first()
+        if not user:
+            # Check by email
+            user = db.query(User).filter_by(email=email).first()
+            if user:
+                user.github_id = github_id
+                user.github_username = github_username
+                user.avatar_url = avatar_url
+            else:
+                user = User(
+                    email=email,
+                    name=name,
+                    github_id=github_id,
+                    github_username=github_username,
+                    avatar_url=avatar_url,
+                )
+                db.add(user)
+                db.flush()
+        else:
+            # Update avatar
+            user.avatar_url = avatar_url
+
+        db.commit()
+
+        # Set session
+        session["user_id"] = user.id
+        session["github_username"] = github_username
+        session["avatar_url"] = avatar_url
+
+        # Redirect: if not onboarded, go to onboarding
+        if not user.onboarded:
+            return redirect(url_for("onboarding"))
+
+        return redirect(url_for("dashboard"))
+    finally:
+        db.close()
+
+
+@app.route("/auth/demo")
+def demo_login():
+    """Quick demo login (dev only)."""
+    if not app.debug:
+        return redirect(url_for("login"))
+
+    db = get_db()
+    try:
+        user = db.query(User).filter_by(email="demo@boxshift.nl").first()
+        if user:
+            session["user_id"] = user.id
+            session["github_username"] = "demo"
+            return redirect(url_for("dashboard"))
+        return redirect(url_for("login"))
+    finally:
+        db.close()
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 
 # ─── Landing page (static files) ──────────────────────────────────────────
@@ -75,11 +233,13 @@ def waitlist_signup():
 # ─── Admin: Leads overview ───────────────────────────────────────────────
 
 @app.route("/admin/leads")
+@login_required
 def admin_leads():
     db = get_db()
     try:
+        user = get_current_user(db)
         leads = db.query(Lead).order_by(Lead.created_at.desc()).all()
-        return render_template("admin_leads.html", leads=leads)
+        return render_template("admin_leads.html", leads=leads, user=user)
     finally:
         db.close()
 
@@ -87,68 +247,63 @@ def admin_leads():
 # ─── Onboarding ──────────────────────────────────────────────────────────
 
 @app.route("/onboarding")
+@login_required
 def onboarding():
-    return render_template("onboarding.html")
+    db = get_db()
+    try:
+        user = get_current_user(db)
+        return render_template("onboarding.html", user=user)
+    finally:
+        db.close()
 
 
 @app.route("/api/onboard", methods=["POST"])
+@login_required
 def api_onboard():
     data = request.form
-
-    name = data.get("name", "").strip()
-    email = data.get("email", "").strip().lower()
-    phone = data.get("phone", "").strip() or None
-    vermogen = int(data.get("vermogen_estimate", 0) or 0)
-    broker = data.get("broker", "degiro")
-    situation = data.get("situation", "particulier")
-
-    if not name or not email:
-        return render_template("onboarding.html", error="Naam en e-mail zijn verplicht")
-
     db = get_db()
     try:
-        # Check if user already exists
-        user = db.query(User).filter_by(email=email).first()
+        user = get_current_user(db)
         if not user:
-            user = User(
-                email=email,
-                name=name,
-                phone=phone,
-                vermogen_estimate=vermogen,
-                broker=broker,
-                situation=situation,
-            )
-            db.add(user)
-            db.flush()
+            return redirect(url_for("login"))
 
-            # Create empty BV
-            bv_name = f"{name.split()[0]} Beleggingen B.V." if name else "Mijn Beleggingen B.V."
+        user.name = data.get("name", user.name).strip()
+        user.phone = data.get("phone", "").strip() or None
+        user.vermogen_estimate = int(data.get("vermogen_estimate", 0) or 0)
+        user.broker = data.get("broker", "degiro")
+        user.situation = data.get("situation", "particulier")
+        user.onboarded = True
+
+        # Create BV if none exists
+        bv = db.query(BV).filter_by(user_id=user.id).first()
+        if not bv:
+            bv_name = f"{user.name.split()[0]} Beleggingen B.V." if user.name else "Mijn Beleggingen B.V."
             bv = BV(user_id=user.id, name=bv_name)
             db.add(bv)
 
-            # Convert lead if exists
-            lead = db.query(Lead).filter_by(email=email).first()
-            if lead:
-                lead.status = "converted"
+        # Convert lead if exists
+        lead = db.query(Lead).filter_by(email=user.email).first()
+        if lead:
+            lead.status = "converted"
 
-            db.commit()
-
-        return redirect(url_for("dashboard", user_id=user.id))
+        db.commit()
+        return redirect(url_for("dashboard"))
     finally:
         db.close()
 
 
 # ─── Dashboard ───────────────────────────────────────────────────────────
 
-@app.route("/dashboard/<int:user_id>")
-def dashboard(user_id):
+@app.route("/dashboard")
+@login_required
+def dashboard():
     db = get_db()
     try:
-        user = db.query(User).get(user_id)
+        user = get_current_user(db)
         if not user:
-            return redirect(url_for("onboarding"))
+            return redirect(url_for("login"))
 
-        bv = db.query(BV).filter_by(user_id=user_id).first()
+        bv = db.query(BV).filter_by(user_id=user.id).first()
         holdings = []
         total_cost = 0
         tx_count = 0
@@ -159,9 +314,7 @@ def dashboard(user_id):
             total_cost = sum(h.total_cost for h in holdings)
             tx_count = db.query(Transaction).filter_by(bv_id=bv.id).count()
 
-            # YTD P&L: sum of dividends + interest + sell amounts - costs for current year
             current_year = datetime.now().year
-            from sqlalchemy import extract
             year_txs = (
                 db.query(Transaction)
                 .filter(
@@ -192,17 +345,18 @@ def dashboard(user_id):
 # ─── CSV Import ──────────────────────────────────────────────────────────
 
 @app.route("/api/import", methods=["POST"])
+@login_required
 def import_csv():
-    user_id = request.form.get("user_id", type=int)
     broker_type = request.form.get("broker", "degiro")
     file = request.files.get("csv_file")
 
-    if not file or not user_id:
-        return jsonify({"error": "Bestand en user_id vereist"}), 400
+    if not file:
+        return jsonify({"error": "Bestand vereist"}), 400
 
     db = get_db()
     try:
-        bv = db.query(BV).filter_by(user_id=user_id).first()
+        user = get_current_user(db)
+        bv = db.query(BV).filter_by(user_id=user.id).first()
         if not bv:
             return jsonify({"error": "Geen BV gevonden"}), 404
 
@@ -214,12 +368,9 @@ def import_csv():
         else:
             parsed = parse_degiro_csv(content)
 
-        # Optionally classify with AI
         from services.ai_classifier import classify_transactions
         parsed = classify_transactions(parsed)
 
-        # Save transactions
-        count = 0
         for tx_data in parsed:
             tx = Transaction(
                 bv_id=bv.id,
@@ -235,30 +386,29 @@ def import_csv():
                 category=tx_data.get("type"),
             )
             db.add(tx)
-            count += 1
 
         db.commit()
 
-        # Process transactions into holdings
         from services.transaction_engine import process_transactions
-        summary = process_transactions(db, bv.id)
+        process_transactions(db, bv.id)
 
-        return redirect(url_for("dashboard", user_id=user_id))
+        return redirect(url_for("dashboard"))
     finally:
         db.close()
 
 
 # ─── Transactions view ───────────────────────────────────────────────────
 
-@app.route("/transactions/<int:user_id>")
-def transactions_view(user_id):
+@app.route("/transactions")
+@login_required
+def transactions_view():
     db = get_db()
     try:
-        user = db.query(User).get(user_id)
+        user = get_current_user(db)
         if not user:
-            return redirect(url_for("onboarding"))
+            return redirect(url_for("login"))
 
-        bv = db.query(BV).filter_by(user_id=user_id).first()
+        bv = db.query(BV).filter_by(user_id=user.id).first()
         txs = []
         filter_type = request.args.get("type", "")
         filter_year = request.args.get("year", "")
@@ -268,12 +418,10 @@ def transactions_view(user_id):
             if filter_type:
                 query = query.filter_by(type=filter_type)
             if filter_year:
-                from sqlalchemy import extract
                 query = query.filter(extract("year", Transaction.date) == int(filter_year))
             txs = query.order_by(Transaction.date.desc()).all()
 
-        # Get available years
-        years = set()
+        years = []
         if bv:
             all_txs = db.query(Transaction.date).filter_by(bv_id=bv.id).all()
             years = sorted(set(tx.date.year for tx in all_txs), reverse=True)
@@ -293,17 +441,18 @@ def transactions_view(user_id):
 
 # ─── Annual Report ────────────────────────────────────────────────────────
 
-@app.route("/annual-report/<int:user_id>")
-def annual_report_view(user_id):
+@app.route("/annual-report")
+@login_required
+def annual_report_view():
     year = request.args.get("year", datetime.now().year - 1, type=int)
 
     db = get_db()
     try:
-        user = db.query(User).get(user_id)
+        user = get_current_user(db)
         if not user:
-            return redirect(url_for("onboarding"))
+            return redirect(url_for("login"))
 
-        bv = db.query(BV).filter_by(user_id=user_id).first()
+        bv = db.query(BV).filter_by(user_id=user.id).first()
         report = None
 
         if bv:
@@ -321,37 +470,39 @@ def annual_report_view(user_id):
 
 
 @app.route("/api/generate-report", methods=["POST"])
+@login_required
 def generate_report():
-    user_id = request.form.get("user_id", type=int)
     year = request.form.get("year", type=int)
 
     db = get_db()
     try:
-        bv = db.query(BV).filter_by(user_id=user_id).first()
+        user = get_current_user(db)
+        bv = db.query(BV).filter_by(user_id=user.id).first()
         if not bv:
             return jsonify({"error": "Geen BV gevonden"}), 404
 
         from services.annual_report import generate_annual_report
-        report = generate_annual_report(db, bv.id, year)
+        generate_annual_report(db, bv.id, year)
 
-        return redirect(url_for("annual_report_view", user_id=user_id, year=year))
+        return redirect(url_for("annual_report_view", year=year))
     finally:
         db.close()
 
 
 # ─── VPB view ─────────────────────────────────────────────────────────────
 
-@app.route("/vpb/<int:user_id>")
-def vpb_view(user_id):
+@app.route("/vpb")
+@login_required
+def vpb_view():
     year = request.args.get("year", datetime.now().year - 1, type=int)
 
     db = get_db()
     try:
-        user = db.query(User).get(user_id)
+        user = get_current_user(db)
         if not user:
-            return redirect(url_for("onboarding"))
+            return redirect(url_for("login"))
 
-        bv = db.query(BV).filter_by(user_id=user_id).first()
+        bv = db.query(BV).filter_by(user_id=user.id).first()
         filing = None
         breakdown = None
 
@@ -374,21 +525,21 @@ def vpb_view(user_id):
 
 
 @app.route("/api/calculate-vpb", methods=["POST"])
+@login_required
 def calculate_vpb_route():
-    user_id = request.form.get("user_id", type=int)
     year = request.form.get("year", type=int)
 
     db = get_db()
     try:
-        bv = db.query(BV).filter_by(user_id=user_id).first()
+        user = get_current_user(db)
+        bv = db.query(BV).filter_by(user_id=user.id).first()
         if not bv:
             return jsonify({"error": "Geen BV gevonden"}), 404
 
-        # Generate report first (which also creates VPB filing)
         from services.annual_report import generate_annual_report
         generate_annual_report(db, bv.id, year)
 
-        return redirect(url_for("vpb_view", user_id=user_id, year=year))
+        return redirect(url_for("vpb_view", year=year))
     finally:
         db.close()
 

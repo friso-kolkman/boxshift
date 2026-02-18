@@ -46,10 +46,12 @@ def seed():
     user = User(
         email="demo@boxshift.nl",
         name="Friso Kolkman",
+        github_username="friso-kolkman",
         phone="+31 6 12345678",
         vermogen_estimate=500_000,
         broker="degiro",
         situation="particulier",
+        onboarded=True,
     )
     db.add(user)
     db.flush()
