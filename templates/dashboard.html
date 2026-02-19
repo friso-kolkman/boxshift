@@ -1,29 +1,173 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — BoxShift{% endblock %}
 
+{% block extra_head %}
+<style>
+    .demo-banner {
+        background: linear-gradient(135deg, rgba(88, 166, 255, 0.08), rgba(63, 185, 80, 0.08));
+        border: 1px solid rgba(88, 166, 255, 0.2);
+        border-radius: var(--radius);
+        padding: 16px 24px;
+        margin-bottom: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .demo-banner p { font-size: 0.9rem; color: var(--text-muted); }
+    .demo-banner strong { color: var(--accent); }
+
+    .savings-card {
+        background: linear-gradient(135deg, rgba(63, 185, 80, 0.05), rgba(63, 185, 80, 0.12));
+        border: 1px solid rgba(63, 185, 80, 0.3);
+        border-radius: var(--radius);
+        padding: 28px;
+        margin-bottom: 32px;
+    }
+    .savings-card .savings-amount { font-size: 2.4rem; font-weight: 800; color: var(--green); }
+    .savings-card .savings-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; }
+    .savings-detail { display: flex; gap: 32px; margin-top: 12px; font-size: 0.85rem; }
+    .savings-detail span { color: var(--text-muted); }
+    .savings-detail .amount { font-weight: 600; color: var(--text); margin-left: 6px; }
+
+    .status-pipeline {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 32px;
+    }
+    .pipeline-step {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 16px;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text);
+        transition: all 0.2s;
+        position: relative;
+    }
+    .pipeline-step:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .pipeline-step.done { border-color: rgba(63, 185, 80, 0.3); }
+    .pipeline-step.done::after {
+        content: "";
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+    }
+    .pipeline-step .step-num {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 8px;
+    }
+    .pipeline-step .step-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .pipeline-step .step-status { font-size: 0.8rem; color: var(--text-muted); }
+    .pipeline-step.done .step-status { color: var(--green); }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+    .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+    }
+    .stat-card .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+    .stat-card .stat-value { font-size: 1.5rem; font-weight: 700; }
+    .stat-card .stat-value.green { color: var(--green); }
+    .stat-card .stat-value.red { color: var(--red); }
+    .stat-card .stat-value.blue { color: var(--accent); }
+
+    @media (max-width: 768px) {
+        .status-pipeline { grid-template-columns: repeat(2, 1fr); }
+        .stat-grid { grid-template-columns: repeat(2, 1fr); }
+        .savings-detail { flex-direction: column; gap: 8px; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+{# Demo banner #}
+{% if is_demo %}
+<div class="demo-banner">
+    <p>Je bekijkt <strong>demo-data</strong> van een fictieve beleggings-BV. Start met je eigen gegevens om je persoonlijke besparing te zien.</p>
+    <a href="/onboarding" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.85rem; white-space: nowrap;">Start met eigen data</a>
+</div>
+{% endif %}
+
 <div style="margin-bottom: 32px;">
     <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">{{ bv.name if bv else 'Dashboard' }}</h1>
-    <p style="color: var(--text-muted);">Welkom terug, {{ user.name.split()[0] }}</p>
+    <p style="color: var(--text-muted);">Welkom terug, {{ user.name.split()[0] if user.name else 'gebruiker' }}</p>
 </div>
 
-<!-- Metrics -->
-<div class="grid-3" style="margin-bottom: 32px;">
-    <div class="metric-card">
-        <div class="label">Portefeuille (kostprijs)</div>
-        <div class="value blue">&euro;{{ "{:,.2f}".format(total_cost).replace(",", ".") }}</div>
+{# Tax savings highlight #}
+{% if tax_savings %}
+<div class="savings-card">
+    <div class="savings-label">Geschatte belastingbesparing (Box 2 vs Box 3)</div>
+    <div class="savings-amount">&euro;{{ "{:,.0f}".format(tax_savings.savings).replace(",", ".") }} bespaard</div>
+    <div class="savings-detail">
+        <span>Box 3 (nieuw): <span class="amount" style="color: var(--red);">&euro;{{ "{:,.0f}".format(tax_savings.box3).replace(",", ".") }}</span></span>
+        <span>Box 2 (BV): <span class="amount" style="color: var(--green);">&euro;{{ "{:,.0f}".format(tax_savings.box2).replace(",", ".") }}</span></span>
     </div>
-    <div class="metric-card">
-        <div class="label">Transacties</div>
-        <div class="value">{{ tx_count }}</div>
+</div>
+{% endif %}
+
+{# Status pipeline #}
+<div class="status-pipeline">
+    <a href="/dashboard" class="pipeline-step done">
+        <div class="step-num">Stap 1</div>
+        <div class="step-title">BV actief</div>
+        <div class="step-status">{{ bv.status if bv else 'pending' }}</div>
+    </a>
+    <a href="/transactions" class="pipeline-step {{ 'done' if tx_count > 0 }}">
+        <div class="step-num">Stap 2</div>
+        <div class="step-title">Transacties</div>
+        <div class="step-status">{{ tx_count }} verwerkt</div>
+    </a>
+    <a href="/annual-report?year=2025" class="pipeline-step {{ 'done' if report_2025 }}">
+        <div class="step-num">Stap 3</div>
+        <div class="step-title">Jaarrekening</div>
+        <div class="step-status">{{ report_2025.status if report_2025 else 'niet gegenereerd' }}</div>
+    </a>
+    <a href="/vpb?year=2025" class="pipeline-step {{ 'done' if filing_2025 }}">
+        <div class="step-num">Stap 4</div>
+        <div class="step-title">VPB-aangifte</div>
+        <div class="step-status">{{ filing_2025.status if filing_2025 else 'niet berekend' }}</div>
+    </a>
+</div>
+
+{# Key metrics #}
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Portefeuille (kostprijs)</div>
+        <div class="stat-value blue">&euro;{{ "{:,.0f}".format(total_cost).replace(",", ".") }}</div>
     </div>
-    <div class="metric-card">
-        <div class="label">YTD Resultaat</div>
-        <div class="value {{ 'green' if ytd_pl >= 0 else 'red' }}">&euro;{{ "{:,.2f}".format(ytd_pl).replace(",", ".") }}</div>
+    <div class="stat-card">
+        <div class="stat-label">Ingelegd kapitaal</div>
+        <div class="stat-value">&euro;{{ "{:,.0f}".format(total_deposits).replace(",", ".") }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Ontvangen dividend</div>
+        <div class="stat-value green">&euro;{{ "{:,.0f}".format(total_dividends).replace(",", ".") }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">YTD resultaat</div>
+        <div class="stat-value {{ 'green' if ytd_pl >= 0 else 'red' }}">&euro;{{ "{:,.0f}".format(ytd_pl).replace(",", ".") }}</div>
     </div>
 </div>
 
-<!-- Holdings -->
+{# Holdings #}
 <div style="margin-bottom: 32px;">
     <div class="section-title">Huidige posities</div>
     {% if holdings %}
@@ -43,8 +187,8 @@
                 <tr>
                     <td><span class="badge badge-blue">{{ h.ticker }}</span></td>
                     <td>{{ h.name }}</td>
-                    <td style="text-align:right">{{ "%.2f"|format(h.quantity) }}</td>
-                    <td style="text-align:right">&euro;{{ "%.2f"|format(h.avg_cost_price) }}</td>
+                    <td style="text-align:right">{{ "%.0f"|format(h.quantity) }}</td>
+                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(h.avg_cost_price).replace(",", ".") }}</td>
                     <td style="text-align:right">&euro;{{ "{:,.2f}".format(h.total_cost).replace(",", ".") }}</td>
                 </tr>
                 {% endfor %}
@@ -54,12 +198,12 @@
     {% else %}
     <div class="empty-state">
         <h3>Nog geen posities</h3>
-        <p>Upload je broker CSV om te beginnen</p>
+        <p>Upload je broker CSV hieronder om te beginnen</p>
     </div>
     {% endif %}
 </div>
 
-<!-- CSV Upload -->
+{# CSV Upload #}
 <div style="margin-bottom: 32px;">
     <div class="section-title">Transacties importeren</div>
     <form action="/api/import" method="POST" enctype="multipart/form-data">
@@ -81,17 +225,5 @@
         </div>
         <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Importeren</button>
     </form>
-</div>
-
-<!-- Quick actions -->
-<div class="grid-2">
-    <a href="/annual-report" class="metric-card" style="text-decoration: none; display: block;">
-        <div class="label">Jaarrekening</div>
-        <div style="color: var(--text); font-weight: 600;">Genereer jaarrekening &rarr;</div>
-    </a>
-    <a href="/vpb" class="metric-card" style="text-decoration: none; display: block;">
-        <div class="label">Belasting</div>
-        <div style="color: var(--text); font-weight: 600;">Bereken VPB &rarr;</div>
-    </a>
 </div>
 {% endblock %}

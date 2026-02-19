@@ -308,26 +308,57 @@ def dashboard():
         total_cost = 0
         tx_count = 0
         ytd_pl = 0
+        total_deposits = 0
+        total_dividends = 0
+        total_realized = 0
+        report_2025 = None
+        filing_2025 = None
+        tax_savings = None
 
         if bv:
             holdings = db.query(Holding).filter_by(bv_id=bv.id).all()
             total_cost = sum(h.total_cost for h in holdings)
             tx_count = db.query(Transaction).filter_by(bv_id=bv.id).count()
 
+            all_txs = db.query(Transaction).filter_by(bv_id=bv.id).all()
+            for tx in all_txs:
+                if tx.type == "deposit":
+                    total_deposits += abs(tx.amount)
+                elif tx.type == "dividend":
+                    total_dividends += abs(tx.amount)
+                elif tx.type == "sell":
+                    total_realized += tx.amount
+
             current_year = datetime.now().year
-            year_txs = (
-                db.query(Transaction)
-                .filter(
-                    Transaction.bv_id == bv.id,
-                    extract("year", Transaction.date) == current_year,
-                )
-                .all()
-            )
+            year_txs = [
+                tx for tx in all_txs
+                if tx.date.year == current_year
+            ]
             for tx in year_txs:
                 if tx.type in ("sell", "dividend", "interest"):
                     ytd_pl += tx.amount
                 elif tx.type == "cost":
                     ytd_pl -= abs(tx.amount)
+
+            # Check report/filing status for most recent year
+            report_2025 = db.query(AnnualReport).filter_by(bv_id=bv.id, year=2025).first()
+            filing_2025 = db.query(VPBFiling).filter_by(bv_id=bv.id, year=2025).first()
+
+            # Calculate tax savings: Box 3 (36% on unrealized) vs Box 2 (VPB on realized)
+            if filing_2025 and total_cost > 0:
+                # Box 3 new law: 36% on total return (realized + unrealized)
+                box3_taxable = total_cost * 0.06  # assume 6% deemed return for simplicity
+                box3_tax = box3_taxable * 0.36
+                box2_tax = filing_2025.vpb_amount
+                savings = round(box3_tax - box2_tax, 2)
+                if savings > 0:
+                    tax_savings = {
+                        "box3": round(box3_tax, 2),
+                        "box2": round(box2_tax, 2),
+                        "savings": savings,
+                    }
+
+        is_demo = session.get("github_username") == "demo"
 
         return render_template(
             "dashboard.html",
@@ -337,6 +368,13 @@ def dashboard():
             total_cost=round(total_cost, 2),
             tx_count=tx_count,
             ytd_pl=round(ytd_pl, 2),
+            total_deposits=round(total_deposits, 2),
+            total_dividends=round(total_dividends, 2),
+            total_realized=round(total_realized, 2),
+            report_2025=report_2025,
+            filing_2025=filing_2025,
+            tax_savings=tax_savings,
+            is_demo=is_demo,
         )
     finally:
         db.close()
