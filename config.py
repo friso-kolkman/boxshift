@@ -19,3 +19,7 @@ ALLOWED_GITHUB_USERS = os.getenv("ALLOWED_GITHUB_USERS", "friso-kolkman").split(
 
 # Allow demo login (set to "true" to enable /auth/demo without debug mode)
 ALLOW_DEMO_LOGIN = os.getenv("ALLOW_DEMO_LOGIN", "false").lower() == "true"
+
+# Resend (email)
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+EMAIL_FROM = os.getenv("EMAIL_FROM", "BoxShift <noreply@boxshift.nl>")

@@ -222,6 +222,14 @@ def waitlist_signup():
         db.commit()
 
         count = db.query(Lead).count()
+
+        # Send confirmation email
+        try:
+            from services.email import send_waitlist_confirmation
+            send_waitlist_confirmation(email, count)
+        except Exception:
+            pass  # Don't fail signup if email fails
+
         return jsonify({
             "message": f"Je bent nummer #{count}!",
             "position": count,
