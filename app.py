@@ -505,12 +505,14 @@ def vpb_view():
         bv = db.query(BV).filter_by(user_id=user.id).first()
         filing = None
         breakdown = None
+        aangifte = None
 
         if bv:
             filing = db.query(VPBFiling).filter_by(bv_id=bv.id, year=year).first()
             if filing:
-                from services.vpb import vpb_breakdown
+                from services.vpb import vpb_breakdown, generate_vpb_aangifte
                 breakdown = vpb_breakdown(filing.taxable_profit)
+                aangifte = generate_vpb_aangifte(db, bv.id, year)
 
         return render_template(
             "vpb.html",
@@ -518,7 +520,9 @@ def vpb_view():
             bv=bv,
             filing=filing,
             breakdown=breakdown,
+            aangifte=aangifte,
             year=year,
+            now=datetime.now(),
         )
     finally:
         db.close()

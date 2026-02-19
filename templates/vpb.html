@@ -1,8 +1,86 @@
 {% extends "base.html" %}
-{% block title %}VPB {{ year }} — BoxShift{% endblock %}
+{% block title %}VPB-aangifte {{ year }} — BoxShift{% endblock %}
+
+{% block extra_head %}
+<style>
+    .aangifte-doc {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 40px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .aangifte-header {
+        text-align: center;
+        padding-bottom: 24px;
+        margin-bottom: 32px;
+        border-bottom: 2px solid var(--border);
+    }
+    .aangifte-header h2 { font-size: 1.4rem; margin-bottom: 4px; }
+    .aangifte-header p { color: var(--text-muted); font-size: 0.9rem; }
+    .aangifte-section {
+        margin-bottom: 32px;
+    }
+    .aangifte-section h3 {
+        font-size: 1rem;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+    }
+    .aangifte-field {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 0.9rem;
+    }
+    .aangifte-field .label { color: var(--text-muted); }
+    .aangifte-field .value { font-weight: 600; text-align: right; }
+    .aangifte-total {
+        border-top: 2px solid var(--border);
+        padding-top: 8px;
+        margin-top: 4px;
+        font-weight: 700;
+    }
+    .aangifte-total .value { font-size: 1.1rem; }
+    .effecten-table { width: 100%; font-size: 0.85rem; margin-top: 8px; }
+    .effecten-table th { padding: 8px 12px; font-size: 0.75rem; }
+    .effecten-table td { padding: 8px 12px; }
+    .steps-box {
+        background: rgba(88, 166, 255, 0.05);
+        border: 1px solid rgba(88, 166, 255, 0.2);
+        border-radius: var(--radius);
+        padding: 24px;
+        margin-top: 32px;
+    }
+    .steps-box h3 { color: var(--accent); font-size: 1rem; margin-bottom: 16px; }
+    .steps-box ol { padding-left: 20px; }
+    .steps-box li { padding: 6px 0; font-size: 0.9rem; color: var(--text-muted); }
+    .steps-box li strong { color: var(--text); }
+    .steps-box a { color: var(--accent); }
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 24px;
+    }
+    @media print {
+        nav, footer, .mobile-menu, .action-bar, .steps-box, form, .no-print { display: none !important; }
+        .page-content { padding-top: 0 !important; }
+        .aangifte-doc { border: none; padding: 0; box-shadow: none; }
+        body { background: white; color: black; }
+        .aangifte-field .label, .steps-box li { color: #555; }
+        .aangifte-section h3 { color: #333; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;" class="no-print">
     <div>
         <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">VPB-aangifte {{ year }}</h1>
         <p style="color: var(--text-muted);">{{ bv.name if bv else '' }}</p>
@@ -13,65 +91,263 @@
             <option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>
             {% endfor %}
         </select>
-        <button type="submit" class="btn btn-primary">Bereken VPB</button>
+        <button type="submit" class="btn btn-primary">Genereer aangifte</button>
     </form>
 </div>
 
-{% if filing and breakdown %}
-<div class="grid-3" style="margin-bottom: 32px;">
+{% if aangifte %}
+{# ── Summary cards ── #}
+<div class="grid-3 no-print" style="margin-bottom: 32px;">
     <div class="metric-card">
         <div class="label">Belastbare winst</div>
-        <div class="value">&euro;{{ "{:,.2f}".format(breakdown.taxable_profit).replace(",", ".") }}</div>
+        <div class="value">&euro;{{ "{:,.0f}".format(aangifte.fiscale_winst.belastbare_winst).replace(",", ".") }}</div>
     </div>
     <div class="metric-card">
         <div class="label">Te betalen VPB</div>
-        <div class="value red">&euro;{{ "{:,.2f}".format(breakdown.total_vpb).replace(",", ".") }}</div>
+        <div class="value red">&euro;{{ "{:,.0f}".format(aangifte.vpb.total_vpb).replace(",", ".") }}</div>
     </div>
     <div class="metric-card">
         <div class="label">Effectief tarief</div>
-        <div class="value blue">{{ breakdown.effective_rate }}%</div>
+        <div class="value blue">{{ aangifte.vpb.effective_rate }}%</div>
     </div>
 </div>
 
-<div style="margin-bottom: 32px;">
-    <h2 class="section-title">Berekening</h2>
-    <div class="report-table" style="max-width: 600px;">
-        <table>
-            <thead><tr><th>Schijf</th><th style="text-align:right">Bedrag</th><th style="text-align:right">Tarief</th><th style="text-align:right">Belasting</th></tr></thead>
-            <tbody>
-                <tr>
-                    <td>Eerste &euro;200.000</td>
-                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.low_bracket).replace(",", ".") }}</td>
-                    <td style="text-align:right">19%</td>
-                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.low_bracket_tax).replace(",", ".") }}</td>
-                </tr>
-                {% if breakdown.high_bracket > 0 %}
-                <tr>
-                    <td>Boven &euro;200.000</td>
-                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.high_bracket).replace(",", ".") }}</td>
-                    <td style="text-align:right">25,8%</td>
-                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.high_bracket_tax).replace(",", ".") }}</td>
-                </tr>
-                {% endif %}
-                <tr class="report-row-total">
-                    <td>Totaal</td>
-                    <td style="text-align:right">&euro;{{ "{:,.2f}".format(breakdown.taxable_profit).replace(",", ".") }}</td>
-                    <td style="text-align:right">{{ breakdown.effective_rate }}%</td>
-                    <td style="text-align:right; font-weight: 700; color: var(--red);">&euro;{{ "{:,.2f}".format(breakdown.total_vpb).replace(",", ".") }}</td>
-                </tr>
-            </tbody>
-        </table>
+{# ── Aangifte document ── #}
+<div class="aangifte-doc" id="aangifteDoc">
+    <div class="aangifte-header">
+        <h2>Aangifte Vennootschapsbelasting {{ year }}</h2>
+        <p>{{ aangifte.bv_naam }}</p>
+    </div>
+
+    {# Identificatie #}
+    <div class="aangifte-section">
+        <h3>1. Identificatiegegevens</h3>
+        <div class="aangifte-field">
+            <span class="label">Naam rechtspersoon</span>
+            <span class="value">{{ aangifte.bv_naam }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">KVK-nummer</span>
+            <span class="value">{{ aangifte.kvk_nummer }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Boekjaar</span>
+            <span class="value">{{ aangifte.boekjaar_start }} t/m {{ aangifte.boekjaar_eind }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Uiterste indiendatum</span>
+            <span class="value">{{ aangifte.deadline }}</span>
+        </div>
+    </div>
+
+    {# Fiscale balans #}
+    <div class="aangifte-section">
+        <h3>2. Fiscale balans per 31 december {{ year }}</h3>
+
+        <div style="margin-bottom: 20px;">
+            <strong style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Activa</strong>
+            <div class="aangifte-field">
+                <span class="label">Effectenportefeuille (kostprijs)</span>
+                <span class="value">&euro;{{ "{:,.2f}".format(aangifte.balans.activa.effectenportefeuille).replace(",", ".") }}</span>
+            </div>
+            <div class="aangifte-field">
+                <span class="label">Liquide middelen</span>
+                <span class="value">&euro;{{ "{:,.2f}".format(aangifte.balans.activa.liquide_middelen).replace(",", ".") }}</span>
+            </div>
+            <div class="aangifte-field aangifte-total">
+                <span class="label">Totaal activa</span>
+                <span class="value">&euro;{{ "{:,.2f}".format(aangifte.balans.activa.totaal).replace(",", ".") }}</span>
+            </div>
+        </div>
+
+        <div>
+            <strong style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Passiva</strong>
+            <div class="aangifte-field">
+                <span class="label">Gestort kapitaal</span>
+                <span class="value">&euro;{{ "{:,.2f}".format(aangifte.balans.passiva.gestort_kapitaal).replace(",", ".") }}</span>
+            </div>
+            <div class="aangifte-field">
+                <span class="label">Winstreserve voorgaande jaren</span>
+                <span class="value">&euro;{{ "{:,.2f}".format(aangifte.balans.passiva.winstreserve_voorgaande_jaren).replace(",", ".") }}</span>
+            </div>
+            <div class="aangifte-field">
+                <span class="label">Resultaat boekjaar</span>
+                <span class="value">&euro;{{ "{:,.2f}".format(aangifte.balans.passiva.resultaat_boekjaar).replace(",", ".") }}</span>
+            </div>
+            <div class="aangifte-field">
+                <span class="label">Vennootschapsbelasting (schuld)</span>
+                <span class="value">&euro;{{ "{:,.2f}".format(aangifte.balans.passiva.vpb_schuld).replace(",", ".") }}</span>
+            </div>
+            <div class="aangifte-field aangifte-total">
+                <span class="label">Totaal passiva</span>
+                <span class="value">&euro;{{ "{:,.2f}".format(aangifte.balans.passiva.totaal).replace(",", ".") }}</span>
+            </div>
+        </div>
+    </div>
+
+    {# Winst en verliesrekening #}
+    <div class="aangifte-section">
+        <h3>3. Winst- en verliesrekening {{ year }}</h3>
+        <div class="aangifte-field">
+            <span class="label">Gerealiseerde koersresultaten</span>
+            <span class="value" style="{{ 'color:var(--green)' if aangifte.winst_verlies.gerealiseerde_koersresultaten >= 0 else 'color:var(--red)' }}">&euro;{{ "{:,.2f}".format(aangifte.winst_verlies.gerealiseerde_koersresultaten).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Dividendinkomsten</span>
+            <span class="value" style="color:var(--green)">&euro;{{ "{:,.2f}".format(aangifte.winst_verlies.dividendinkomsten).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Rente-inkomsten</span>
+            <span class="value" style="color:var(--green)">&euro;{{ "{:,.2f}".format(aangifte.winst_verlies.rente_inkomsten).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Transactiekosten</span>
+            <span class="value" style="color:var(--red)">-&euro;{{ "{:,.2f}".format(aangifte.winst_verlies.transactiekosten).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Overige kosten</span>
+            <span class="value" style="color:var(--red)">-&euro;{{ "{:,.2f}".format(aangifte.winst_verlies.overige_kosten).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field aangifte-total">
+            <span class="label">Resultaat voor belasting</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.winst_verlies.resultaat_voor_belasting).replace(",", ".") }}</span>
+        </div>
+    </div>
+
+    {# VPB berekening #}
+    <div class="aangifte-section">
+        <h3>4. Berekening vennootschapsbelasting</h3>
+        <div class="aangifte-field">
+            <span class="label">Belastbare winst</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.vpb.taxable_profit).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Schijf 1: 19% over &euro;{{ "{:,.0f}".format(aangifte.vpb.low_bracket).replace(",", ".") }}</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.vpb.low_bracket_tax).replace(",", ".") }}</span>
+        </div>
+        {% if aangifte.vpb.high_bracket > 0 %}
+        <div class="aangifte-field">
+            <span class="label">Schijf 2: 25,8% over &euro;{{ "{:,.0f}".format(aangifte.vpb.high_bracket).replace(",", ".") }}</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.vpb.high_bracket_tax).replace(",", ".") }}</span>
+        </div>
+        {% endif %}
+        <div class="aangifte-field aangifte-total">
+            <span class="label">Te betalen vennootschapsbelasting</span>
+            <span class="value" style="color: var(--red);">&euro;{{ "{:,.2f}".format(aangifte.vpb.total_vpb).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field" style="margin-top: 8px;">
+            <span class="label">Effectief belastingtarief</span>
+            <span class="value" style="color: var(--accent);">{{ aangifte.vpb.effective_rate }}%</span>
+        </div>
+    </div>
+
+    {# Effectenspecificatie #}
+    {% if aangifte.effecten %}
+    <div class="aangifte-section">
+        <h3>5. Effectenspecificatie (per balansdatum)</h3>
+        <div class="report-table">
+            <table class="effecten-table">
+                <thead>
+                    <tr>
+                        <th>Ticker</th>
+                        <th>Naam</th>
+                        <th style="text-align:right">Aantal</th>
+                        <th style="text-align:right">Kostprijs/stuk</th>
+                        <th style="text-align:right">Totaal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in aangifte.effecten %}
+                    <tr>
+                        <td style="font-family: monospace;">{{ e.ticker }}</td>
+                        <td>{{ e.naam }}</td>
+                        <td style="text-align:right">{{ "{:,.0f}".format(e.aantal) }}</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(e.kostprijs_per_stuk).replace(",", ".") }}</td>
+                        <td style="text-align:right">&euro;{{ "{:,.2f}".format(e.totale_kostprijs).replace(",", ".") }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Transactie-overzicht #}
+    <div class="aangifte-section">
+        <h3>6. Transactie-overzicht {{ year }}</h3>
+        <div class="aangifte-field">
+            <span class="label">Aankopen effecten</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.transacties.aankopen).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Verkopen effecten</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.transacties.verkopen).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Ontvangen dividend</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.transacties.dividend).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Ontvangen rente</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.transacties.rente).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Transactiekosten</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.transacties.kosten).replace(",", ".") }}</span>
+        </div>
+        <div class="aangifte-field">
+            <span class="label">Kapitaalstortingen</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.transacties.stortingen).replace(",", ".") }}</span>
+        </div>
+        {% if aangifte.transacties.onttrekkingen > 0 %}
+        <div class="aangifte-field">
+            <span class="label">Kapitaalonttrekkingen</span>
+            <span class="value">&euro;{{ "{:,.2f}".format(aangifte.transacties.onttrekkingen).replace(",", ".") }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div style="text-align: center; padding-top: 16px; border-top: 2px solid var(--border); color: var(--text-muted); font-size: 0.8rem;">
+        <p>Gegenereerd door BoxShift op {{ now.strftime('%d-%m-%Y %H:%M') if now else '' }}</p>
+        <p>Dit document dient als basis voor uw VPB-aangifte. Controleer alle gegevens voor indiening.</p>
     </div>
 </div>
 
-<div style="display: flex; gap: 12px; align-items: center;">
-    <span>Status: <span class="badge badge-orange">{{ filing.status }}</span></span>
-    <a href="/annual-report?year={{ year }}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Bekijk jaarrekening &rarr;</a>
+{# ── Actions ── #}
+<div class="action-bar no-print">
+    <button onclick="window.print()" class="btn btn-primary">Print / PDF opslaan</button>
+    <a href="/annual-report?year={{ year }}" class="btn btn-secondary">Bekijk jaarrekening</a>
+    <span style="color: var(--text-muted); font-size: 0.85rem;">
+        Status: <span class="badge badge-{{ 'green' if aangifte.status == 'filed' else 'orange' }}">{{ aangifte.status }}</span>
+    </span>
 </div>
+
+{# ── How to file ── #}
+<div class="steps-box no-print">
+    <h3>Zo dien je de VPB-aangifte in</h3>
+    <ol>
+        <li><strong>Log in</strong> op <a href="https://mijn.belastingdienst.nl/mbd-pmb/inloggen.do" target="_blank" rel="noopener">Mijn Belastingdienst Zakelijk</a> met eHerkenning van je BV</li>
+        <li><strong>Ga naar</strong> "Vennootschapsbelasting" &rarr; "Aangifte doen"</li>
+        <li><strong>Selecteer boekjaar</strong> {{ year }}</li>
+        <li><strong>Vul de gegevens in</strong> uit bovenstaand document:
+            <ul style="margin-top: 6px; padding-left: 16px;">
+                <li>Balansgegevens (sectie 2)</li>
+                <li>Winst- en verliesrekening (sectie 3)</li>
+                <li>Belastbare winst en VPB-bedrag (sectie 4)</li>
+            </ul>
+        </li>
+        <li><strong>Controleer en dien in</strong> &mdash; uiterste datum: <strong>{{ aangifte.deadline }}</strong></li>
+    </ol>
+    <p style="margin-top: 12px; font-size: 0.85rem; color: var(--text-muted);">
+        Tip: Gebruik "Print / PDF opslaan" om dit document te bewaren als PDF voor je administratie.
+    </p>
+</div>
+
 {% else %}
 <div class="empty-state">
-    <h3>Nog geen VPB-berekening voor {{ year }}</h3>
-    <p>Klik op "Bereken VPB" om de vennootschapsbelasting te berekenen op basis van je transacties</p>
+    <h3>Nog geen VPB-aangifte voor {{ year }}</h3>
+    <p>Klik op "Genereer aangifte" om de volledige VPB-aangifte te berekenen op basis van je transacties.</p>
+    <p style="margin-top: 12px; font-size: 0.85rem;">Zorg dat je eerst transacties hebt geimporteerd en de jaarrekening hebt gegenereerd.</p>
 </div>
 {% endif %}
 {% endblock %}
